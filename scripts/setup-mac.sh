@@ -226,12 +226,23 @@ update_macos() {
 # Check if Xcode CLI tools are installed
 check_xcode_cli_tools() {
     local git_path="/Library/Developer/CommandLineTools/usr/bin/git"
-    local xcode_select_path="/usr/bin/xcode-select"
     
     # Check if git exists in the expected location
     if [[ -e "$git_path" ]]; then
         # Verify xcode-select points to the right location
-        if [[ "$(xcode-select -p 2>/dev/null)" == "/Library/Developer/CommandLineTools" ]]; then
+        local xcode_path
+        xcode_path=$(xcode-select -p 2>/dev/null)
+        if [[ "$xcode_path" == "/Library/Developer/CommandLineTools" ]]; then
+            return 0
+        fi
+    fi
+    
+    # Alternative check: try to run git directly
+    if command -v git >/dev/null 2>&1; then
+        # Check if git is from Command Line Tools
+        local git_location
+        git_location=$(which git 2>/dev/null)
+        if [[ "$git_location" == "/usr/bin/git" ]] || [[ "$git_location" == "/Library/Developer/CommandLineTools/usr/bin/git" ]]; then
             return 0
         fi
     fi
@@ -264,10 +275,12 @@ install_xcode_cli_tools() {
         grep "\*.*Command Line Tools" | \
         tail -n 1 | \
         sed 's/^[^C]* //' | \
-        sed 's/ .*//')
+        sed 's/ .*//' | \
+        tr -d '[:space:]')
     
-    if [[ -z "$product_id" ]]; then
+    if [[ -z "$product_id" ]] || [[ "$product_id" == "Command" ]]; then
         error "Could not find Command Line Tools product identifier"
+        error "Command Line Tools may already be installed or not available"
         rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
         return 1
     fi
@@ -295,12 +308,15 @@ verify_installation() {
         success "✓ Xcode Command Line Tools verified"
     else
         error "✗ Xcode Command Line Tools verification failed"
+        info "Checking git location: $(which git 2>/dev/null || echo 'git not found')"
+        info "Checking xcode-select path: $(xcode-select -p 2>/dev/null || echo 'xcode-select failed')"
         all_good=false
     fi
     
     # Check git
     if command -v git >/dev/null 2>&1; then
         success "✓ Git is available"
+        info "Git version: $(git --version 2>/dev/null || echo 'version check failed')"
     else
         error "✗ Git is not available"
         all_good=false
@@ -310,6 +326,7 @@ verify_installation() {
         success "All verifications passed!"
     else
         error "Some verifications failed"
+        warn "You may need to restart your terminal or run 'xcode-select --install' manually"
         return 1
     fi
 }

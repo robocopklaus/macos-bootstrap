@@ -26,26 +26,15 @@ setup_dotfiles() {
     
     info "Searching for dotfiles in: $files_dir"
     
-    # Find all dotfiles in the files directory and subdirectories with null-delimited output
-    local dotfiles
-    dotfiles=$(find "$files_dir" -name ".*" -type f -print0 2>/dev/null || true)
-    
-    # Debug: Show what we found
-    if [[ "$VERBOSE" == true ]]; then
-        info "Raw find output: $(find "$files_dir" -name ".*" -type f)"
-    fi
-    
-    if [[ -z "$dotfiles" ]]; then
-        info "No dotfiles found in $files_dir"
-        return 0
-    fi
-    
-    info "Found dotfiles: $(echo "$dotfiles" | tr '\0' '\n' | xargs basename -a | tr '\n' ' ')"
-    
-    while IFS= read -r -d '' dotfile; do
+    # Find and process all dotfiles in the files directory and subdirectories
+    find "$files_dir" -name ".*" -type f -print0 2>/dev/null | while IFS= read -r -d '' dotfile; do
         local filename
         filename=$(basename "$dotfile")
         local target="$HOME/$filename"
+        
+        if [[ "$VERBOSE" == true ]]; then
+            info "Processing dotfile: $dotfile -> $target"
+        fi
         
         if [[ "$DRY_RUN" == true ]]; then
             if [[ -L "$target" ]]; then
@@ -81,7 +70,7 @@ setup_dotfiles() {
             ln -s "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
-    done < <(printf '%s' "$dotfiles")
+    done
 }
 
 # Main function

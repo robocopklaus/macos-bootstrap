@@ -143,7 +143,7 @@ ask_for_sudo() {
     
     # Request sudo and keep it alive
     sudo -v
-    if [[ $? -eq 0 ]]; then
+    if sudo -n true 2>/dev/null; then
         # Start background process to keep sudo alive
         (
             while true; do

@@ -173,15 +173,16 @@ check_for_updates() {
     local update_output
     update_output=$(softwareupdate -l 2>/dev/null)
     
-    # Check if there are any updates (lines starting with *)
-    local update_count
-    update_count=$(echo "$update_output" | grep -c "^\*" || echo "0")
-    
-    # Also check if the output contains "No new software available"
+    # Check if the output contains "No new software available"
     if echo "$update_output" | grep -q "No new software available"; then
         success "No updates available"
         return 0
-    elif [[ "$update_count" -gt 0 ]]; then
+    fi
+    
+    # Check if there are any updates (lines starting with *)
+    if echo "$update_output" | grep -q "^\*"; then
+        local update_count
+        update_count=$(echo "$update_output" | grep -c "^\*")
         info "Found $update_count update(s) available"
         echo "$update_output" | grep "^\*" | sed 's/^[ *]*//'
         return 1

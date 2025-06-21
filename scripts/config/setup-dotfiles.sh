@@ -24,9 +24,16 @@ setup_dotfiles() {
         return 0
     fi
     
-    # Find all dotfiles in the files directory with null-delimited output
+    info "Searching for dotfiles in: $files_dir"
+    
+    # Find all dotfiles in the files directory and subdirectories with null-delimited output
     local dotfiles
-    dotfiles=$(find "$files_dir" -maxdepth 1 -name ".*" -type f -print0 2>/dev/null || true)
+    dotfiles=$(find "$files_dir" -name ".*" -type f -print0 2>/dev/null || true)
+    
+    # Debug: Show what we found
+    if [[ "$VERBOSE" == true ]]; then
+        info "Raw find output: $(find "$files_dir" -name ".*" -type f)"
+    fi
     
     if [[ -z "$dotfiles" ]]; then
         info "No dotfiles found in $files_dir"

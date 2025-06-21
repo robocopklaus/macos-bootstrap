@@ -182,7 +182,7 @@ check_for_updates() {
     # Check if there are any updates (lines starting with *)
     if echo "$update_output" | grep -q "^\*"; then
         local update_count
-        update_count=$(echo "$update_output" | grep -c "^\*")
+        update_count=$(echo "$update_output" | grep -c "^\*" | tr -d '[:space:]')
         info "Found $update_count update(s) available"
         echo "$update_output" | grep "^\*" | sed 's/^[ *]*//'
         return 1

@@ -337,6 +337,90 @@ verify_installation() {
     fi
 }
 
+# Install Homebrew
+install_homebrew() {
+    info "Checking Homebrew installation..."
+    
+    if command -v brew >/dev/null 2>&1; then
+        success "Homebrew is already installed"
+        return 0
+    fi
+    
+    info "Homebrew not found. Installing..."
+    
+    if [[ "$DRY_RUN" == true ]]; then
+        warn "DRY RUN: Would install Homebrew"
+        return 0
+    fi
+    
+    # Install Homebrew
+    if /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+        success "Homebrew installed successfully"
+        
+        # Add Homebrew to PATH for current session
+        if [[ -f "/opt/homebrew/bin/brew" ]]; then
+            # Apple Silicon Mac
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [[ -f "/usr/local/bin/brew" ]]; then
+            # Intel Mac
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
+        
+        # Update Homebrew
+        info "Updating Homebrew..."
+        brew update
+        success "Homebrew updated"
+    else
+        error "Failed to install Homebrew"
+        return 1
+    fi
+}
+
+# Install applications from Brewfile
+install_brewfile() {
+    info "Installing applications from Brewfile..."
+    
+    if [[ "$DRY_RUN" == true ]]; then
+        warn "DRY RUN: Would install applications from Brewfile"
+        return 0
+    fi
+    
+    # Get the directory where this script is located
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local brewfile_path="$script_dir/../Brewfile"
+    
+    if [[ ! -f "$brewfile_path" ]]; then
+        error "Brewfile not found at: $brewfile_path"
+        return 1
+    fi
+    
+    info "Using Brewfile: $brewfile_path"
+    
+    # Install from Brewfile
+    if brew bundle --file="$brewfile_path"; then
+        success "Applications installed successfully from Brewfile"
+    else
+        error "Failed to install applications from Brewfile"
+        return 1
+    fi
+}
+
+# Verify Homebrew installation
+verify_homebrew() {
+    info "Verifying Homebrew installation..."
+    
+    if command -v brew >/dev/null 2>&1; then
+        success "✓ Homebrew is available"
+        local brew_version
+        brew_version=$(brew --version 2>/dev/null | head -n 1 || echo "version check failed")
+        info "Homebrew version: $brew_version"
+    else
+        error "✗ Homebrew is not available"
+        return 1
+    fi
+}
+
 # Main execution function
 main() {
     info "Starting macOS bootstrap setup"
@@ -355,6 +439,9 @@ main() {
     update_macos
     install_xcode_cli_tools
     verify_installation
+    install_homebrew
+    install_brewfile
+    verify_homebrew
     
     success "macOS bootstrap setup completed successfully!"
     info "Log file saved to: $LOG_FILE"

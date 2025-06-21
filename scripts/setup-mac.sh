@@ -316,7 +316,9 @@ verify_installation() {
     # Check git
     if command -v git >/dev/null 2>&1; then
         success "✓ Git is available"
-        info "Git version: $(git --version 2>/dev/null || echo 'version check failed')"
+        local git_version
+        git_version=$(git --version 2>/dev/null || echo "version check failed")
+        info "Git version: $git_version"
     else
         error "✗ Git is not available"
         all_good=false

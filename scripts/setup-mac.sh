@@ -45,6 +45,10 @@ cleanup() {
     # Kill background sudo process if it exists
     if [[ -n "$SUDO_PID" ]] && kill -0 "$SUDO_PID" 2>/dev/null; then
         kill "$SUDO_PID" 2>/dev/null || true
+        # Wait a moment for the process to terminate gracefully
+        sleep 0.1
+        # Force kill if still running
+        kill -9 "$SUDO_PID" 2>/dev/null || true
     fi
     
     # Remove temporary files
@@ -147,11 +151,11 @@ ask_for_sudo() {
         # Start background process to keep sudo alive
         (
             while true; do
-                sudo -n true
+                sudo -n true >/dev/null 2>&1
                 sleep 50
-                kill -0 "$$" || exit
+                kill -0 "$$" >/dev/null 2>&1 || exit
             done
-        ) &
+        ) >/dev/null 2>&1 &
         SUDO_PID=$!
         success "Sudo privileges obtained and maintained"
     else

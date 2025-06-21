@@ -9,6 +9,15 @@ brew "dockutil"
 cask "1password"
 cask "1password-cli"
 cask "cursor"
+cask "slack"
+cask "google-chrome"
+cask "iina"
+cask "spotify"
+cask "finicky"
+cask "clockify"
+cask "mimestream"
+cask "home-assistant"
+cask "zen"
 
 mas "Numbers", id: 409203825
 mas "Pages", id: 409201541

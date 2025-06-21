@@ -11,6 +11,8 @@ set -euo pipefail  # Exit on error, undefined vars, pipe failures
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly LOG_FILE="/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log"
 readonly TEMP_DIR="/tmp/macos-bootstrap-$$"
+readonly MACOS_BOOTSTRAP_DIR="$HOME/.macos-bootstrap"
+readonly REPOSITORY_URL="https://github.com/robocopklaus/macos-bootstrap.git"
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -84,8 +86,10 @@ Options:
 Description:
     This script safely updates macOS and installs essential development tools.
     It will:
+    - Clone the repository to ~/.macos-bootstrap
     - Update macOS software (with user confirmation)
     - Install Xcode Command Line Tools if not present
+    - Install Homebrew and applications from Brewfile
     - Provide detailed logging of all operations
 
 Examples:
@@ -128,6 +132,36 @@ check_platform() {
         exit 1
     fi
     info "Platform check passed: macOS detected"
+}
+
+# Clone repository to MACOS_BOOTSTRAP_DIR
+clone_repository() {
+    info "Setting up repository in $MACOS_BOOTSTRAP_DIR"
+    
+    if [[ "$DRY_RUN" == true ]]; then
+        warn "DRY RUN: Would clone repository to $MACOS_BOOTSTRAP_DIR"
+        return 0
+    fi
+    
+    info "Repository URL: $REPOSITORY_URL"
+    
+    if [[ ! -d "$MACOS_BOOTSTRAP_DIR" ]]; then
+        info "Cloning repository..."
+        if git clone "$REPOSITORY_URL" "$MACOS_BOOTSTRAP_DIR"; then
+            success "Repository cloned successfully"
+        else
+            error "Failed to clone repository"
+            return 1
+        fi
+    else
+        info "Updating repository..."
+        if git -C "$MACOS_BOOTSTRAP_DIR" pull --rebase; then
+            success "Repository updated successfully"
+        else
+            error "Failed to update repository"
+            return 1
+        fi
+    fi
 }
 
 # Safely request sudo privileges
@@ -385,10 +419,8 @@ install_brewfile() {
         return 0
     fi
     
-    # Get the directory where this script is located
-    local script_dir
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local brewfile_path="$script_dir/../Brewfile"
+    # Use the Brewfile from the cloned repository
+    local brewfile_path="$MACOS_BOOTSTRAP_DIR/Brewfile"
     
     if [[ ! -f "$brewfile_path" ]]; then
         error "Brewfile not found at: $brewfile_path"
@@ -435,6 +467,7 @@ main() {
     
     # Run setup steps
     check_platform
+    clone_repository
     ask_for_sudo
     update_macos
     install_xcode_cli_tools

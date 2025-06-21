@@ -449,16 +449,16 @@ setup_dotfiles() {
         return 0
     fi
     
-    # Find all dotfiles in the files directory
+    # Find all dotfiles in the files directory with null-delimited output
     local dotfiles
-    dotfiles=$(find "$files_dir" -maxdepth 1 -name ".*" -type f 2>/dev/null || true)
+    dotfiles=$(find "$files_dir" -maxdepth 1 -name ".*" -type f -print0 2>/dev/null || true)
     
     if [[ -z "$dotfiles" ]]; then
         info "No dotfiles found in $files_dir"
         return 0
     fi
     
-    info "Found dotfiles: $(echo "$dotfiles" | xargs basename -a | tr '\n' ' ')"
+    info "Found dotfiles: $(echo "$dotfiles" | tr '\0' '\n' | xargs basename -a | tr '\n' ' ')"
     
     while IFS= read -r -d '' dotfile; do
         local filename
@@ -499,7 +499,7 @@ setup_dotfiles() {
             ln -s "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
-    done < <(printf '%s\0' "$dotfiles")
+    done < <(printf '%s' "$dotfiles")
 }
 
 # Setup SSH config symlink

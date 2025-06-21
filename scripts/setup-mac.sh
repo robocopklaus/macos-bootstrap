@@ -630,6 +630,7 @@ setup_dock() {
     local browser_apps=(
         "/System/Cryptexes/App/System/Applications/Safari.app"
         "/Applications/Google Chrome.app"
+        "/Applications/Zen.app"
     )
     
     local communication_apps=(
@@ -641,14 +642,13 @@ setup_dock() {
     
     local productivity_apps=(
         "/Applications/ChatGPT.app"
-        "/Applications/Notion.app"
         "/Applications/GCal for Google Calendar.app"
         "/System/Applications/Calendar.app"
     )
     
     local development_tools=(
-        "/Applications/Visual Studio Code.app"
-        "/Applications/iTerm.app"
+        "/Applications/Cursor.app"
+        "/Applications/Ghostty.app"
     )
     
     local system_preferences=(

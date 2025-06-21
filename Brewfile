@@ -18,6 +18,7 @@ cask "clockify"
 cask "mimestream"
 cask "home-assistant"
 cask "zen"
+cask "ghostty"
 
 mas "Numbers", id: 409203825
 mas "Pages", id: 409201541

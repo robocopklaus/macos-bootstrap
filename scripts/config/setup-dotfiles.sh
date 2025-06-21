@@ -27,7 +27,11 @@ setup_dotfiles() {
     info "Searching for dotfiles in: $files_dir"
     
     # Find and process all dotfiles in the files directory and subdirectories
-    find "$files_dir" -name ".*" -type f -print0 2>/dev/null | while IFS= read -r -d '' dotfile; do
+    # Use a more robust approach to handle the find command
+    local dotfiles_found=false
+    
+    while IFS= read -r -d '' dotfile; do
+        dotfiles_found=true
         local filename
         filename=$(basename "$dotfile")
         local target="$HOME/$filename"
@@ -70,7 +74,12 @@ setup_dotfiles() {
             ln -s "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
-    done
+    done < <(find "$files_dir" -name ".*" -type f -print0 2>/dev/null || true)
+    
+    if [[ "$dotfiles_found" == false ]]; then
+        info "No dotfiles found in $files_dir"
+        info "You can add dotfiles to the files/ directory to have them automatically linked"
+    fi
 }
 
 # Main function

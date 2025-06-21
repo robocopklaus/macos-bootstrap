@@ -31,6 +31,15 @@ LOG_FILE_PATTERN="${LOG_FILE_PATTERN:-/tmp/macos-bootstrap-{timestamp}.log}"
 VERBOSE_LOGGING="${VERBOSE_LOGGING:-false}"
 DRY_RUN_MODE="${DRY_RUN_MODE:-false}"
 
+# Application Paths (for dock customization)
+DOCK_APPS_SMART_HOME="${DOCK_APPS_SMART_HOME:-/Applications/Home Assistant.app}"
+DOCK_APPS_MUSIC="${DOCK_APPS_MUSIC:-/System/Applications/Music.app,/Applications/Spotify.app}"
+DOCK_APPS_BROWSER="${DOCK_APPS_BROWSER:-/System/Cryptexes/App/System/Applications/Safari.app,/Applications/Google Chrome.app,/Applications/Zen.app}"
+DOCK_APPS_COMMUNICATION="${DOCK_APPS_COMMUNICATION:-/System/Applications/Mail.app,/Applications/Mimestream.app,/Applications/Slack.app,/System/Applications/Messages.app}"
+DOCK_APPS_PRODUCTIVITY="${DOCK_APPS_PRODUCTIVITY:-/Applications/GCal for Google Calendar.app,/System/Applications/Calendar.app}"
+DOCK_APPS_DEVELOPMENT="${DOCK_APPS_DEVELOPMENT:-/Applications/Cursor.app,/Applications/Ghostty.app}"
+DOCK_APPS_SYSTEM="${DOCK_APPS_SYSTEM:-/System/Applications/System Settings.app}"
+
 # Function to load custom configuration
 load_custom_config() {
     local custom_config="$1"
@@ -38,6 +47,9 @@ load_custom_config() {
     if [[ -f "$custom_config" ]]; then
         info "Loading custom configuration from: $custom_config"
         source "$custom_config"
+    else
+        error "Custom configuration file not found: $custom_config"
+        return 1
     fi
 }
 
@@ -60,4 +72,11 @@ export_config() {
     export LOG_FILE_PATTERN
     export VERBOSE_LOGGING
     export DRY_RUN_MODE
+    export DOCK_APPS_SMART_HOME
+    export DOCK_APPS_MUSIC
+    export DOCK_APPS_BROWSER
+    export DOCK_APPS_COMMUNICATION
+    export DOCK_APPS_PRODUCTIVITY
+    export DOCK_APPS_DEVELOPMENT
+    export DOCK_APPS_SYSTEM
 } 

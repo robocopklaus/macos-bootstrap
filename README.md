@@ -4,6 +4,7 @@ A comprehensive script to bootstrap a fresh macOS installation with essential de
 
 ## Features
 
+- **Fresh macOS Compatible**: Works on completely fresh macOS installations without requiring Git or any tools to be pre-installed
 - **Modular Design**: Organized into focused, maintainable scripts
 - **macOS Updates**: Safely checks for and installs available macOS updates
 - **Xcode Command Line Tools**: Automatically installs Xcode CLI tools if not present
@@ -19,6 +20,7 @@ A comprehensive script to bootstrap a fresh macOS installation with essential de
 ## Project Structure
 
 ```
+├── install.sh                   # One-liner installer for fresh macOS
 ├── config.sh                    # Configuration file
 ├── Brewfile                     # Homebrew applications
 ├── README.md                    # This file
@@ -81,7 +83,7 @@ The script installs the following tools and applications:
 
 ## Usage
 
-### Quick Start (Recommended for Remote Installs)
+### Quick Start (Recommended for Fresh macOS Installations)
 
 After a fresh macOS install:
 
@@ -89,10 +91,19 @@ After a fresh macOS install:
 2. Run the following command:
 
    ```bash
-   bash <(curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/bootstrap.sh)
+   curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/install.sh | bash
    ```
 
-This will clone (or update) the repository to `~/.macos-bootstrap` and run the full setup from your local machine, ensuring all relative paths and scripts work correctly.
+   Or alternatively:
+
+   ```bash
+   bash <(curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/install.sh)
+   ```
+
+This will:
+1. Install Xcode Command Line Tools (which includes Git)
+2. Clone the repository
+3. Run the full setup process
 
 ### Local Development
 
@@ -140,6 +151,19 @@ Examples:
 # Use a custom config
 ./scripts/main.sh --config my-custom-config.sh
 ```
+
+## Installation Flow
+
+The installation flow is designed to work on completely fresh macOS installations:
+
+1. **install.sh**: Self-contained script that:
+   - Installs Xcode Command Line Tools (includes Git)
+   - Clones the repository
+   - Runs the main setup script
+2. **main.sh**: Orchestrates the modular setup process
+3. **Individual modules**: Handle specific installation tasks
+
+This ensures that the bootstrap process works even when no development tools are pre-installed.
 
 ## Configuration
 
@@ -198,9 +222,6 @@ You can also override configuration using environment variables:
 ```bash
 # Override repository URL
 REPOSITORY_URL="https://github.com/your-fork/macos-bootstrap.git" ./scripts/main.sh
-
-# Disable specific modules
-INSTALL_MACOS_UPDATES=false CUSTOMIZE_DOCK=false ./scripts/main.sh
 ```
 
 ### Adding More Applications

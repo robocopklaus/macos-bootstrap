@@ -122,6 +122,13 @@ verify_installation() {
 
 # Main function
 main() {
+    # Skip installation if already done by bootstrap script
+    if check_xcode_cli_tools; then
+        info "Xcode Command Line Tools already installed (likely by bootstrap script)"
+        verify_installation
+        return 0
+    fi
+    
     install_xcode_cli_tools
     verify_installation
 }

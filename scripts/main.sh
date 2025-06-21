@@ -11,36 +11,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-# Clone repository to MACOS_BOOTSTRAP_DIR
-clone_repository() {
-    info "Setting up repository in $MACOS_BOOTSTRAP_DIR"
-    
-    if [[ "$DRY_RUN" == true ]]; then
-        warn "DRY RUN: Would clone repository to $MACOS_BOOTSTRAP_DIR"
-        return 0
-    fi
-    
-    info "Repository URL: $REPOSITORY_URL"
-    info "Repository Branch: $REPOSITORY_BRANCH"
-    
-    if [[ ! -d "$MACOS_BOOTSTRAP_DIR" ]]; then
-        info "Cloning repository..."
-        if git clone -b "$REPOSITORY_BRANCH" "$REPOSITORY_URL" "$MACOS_BOOTSTRAP_DIR"; then
-            success "Repository cloned successfully"
-        else
-            error "Failed to clone repository"
-            return 1
-        fi
-    else
-        info "Updating repository..."
-        if git -C "$MACOS_BOOTSTRAP_DIR" pull --rebase origin "$REPOSITORY_BRANCH"; then
-            success "Repository updated successfully"
-        else
-            error "Failed to update repository"
-            return 1
-        fi
-    fi
-}
+# Load configuration
+if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
+    source "$SCRIPT_DIR/../config.sh"
+    export_config
+fi
 
 # Run a module script
 run_module() {
@@ -93,9 +68,6 @@ main() {
     # Core system setup
     run_module "macOS Updates" "$SCRIPT_DIR/core/update-macos.sh" "INSTALL_MACOS_UPDATES"
     run_module "Xcode CLI Tools" "$SCRIPT_DIR/core/install-xcode-tools.sh" "INSTALL_XCODE_TOOLS"
-    
-    # Clone repository (needed for subsequent steps)
-    clone_repository
     
     # Install tools and applications
     run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW"

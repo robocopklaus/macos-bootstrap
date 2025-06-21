@@ -13,6 +13,20 @@ source "$SCRIPT_DIR/../common.sh"
 # Configuration
 readonly MACOS_BOOTSTRAP_DIR="$HOME/.macos-bootstrap"
 
+# Check if 1Password is available
+check_1password_agent() {
+    local agent_socket="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+    
+    if [[ -S "$agent_socket" ]]; then
+        success "✓ 1Password SSH agent socket found"
+        return 0
+    else
+        warn "1Password SSH agent socket not found at: $agent_socket"
+        info "You may need to install 1Password and enable SSH agent"
+        return 1
+    fi
+}
+
 # Setup SSH config symlink
 setup_ssh_config() {
     info "Setting up SSH config symlink..."
@@ -45,6 +59,9 @@ setup_ssh_config() {
         return 0
     fi
     
+    # Check 1Password agent availability
+    check_1password_agent
+    
     # Create symlink for SSH config
     if [[ -L "$ssh_config_target" ]]; then
         # Check if it's already pointing to the right place
@@ -69,6 +86,8 @@ setup_ssh_config() {
         success "✓ Created SSH config symlink: $ssh_config_target"
     fi
     
+    # Set proper permissions on SSH config
+    chmod 600 "$ssh_config_target"
     success "SSH config symlink created successfully."
 }
 

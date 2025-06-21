@@ -8,6 +8,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
     source "$SCRIPT_DIR/../config.sh"
+    export_config
 fi
 
 # Configuration
@@ -159,7 +160,11 @@ parse_args() {
                 ;;
             -c|--config)
                 if [[ -n "${2:-}" ]]; then
-                    load_custom_config "$2"
+                    if load_custom_config "$2"; then
+                        export_config
+                    else
+                        exit 1
+                    fi
                     shift 2
                 else
                     error "Config file path required for --config option"

@@ -10,6 +10,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
+# Check if application exists
+app_exists() {
+    local app_path="$1"
+    [[ -d "$app_path" ]]
+}
+
 # Setup Dock items
 setup_dock() {
     info "Setting up Dock items..."
@@ -31,17 +37,28 @@ setup_dock() {
         local category="$1"
         shift
         local apps=("$@")
+        local added_count=0
         
         info "Adding $category applications to Dock..."
         for app in "${apps[@]}"; do
-            if dockutil --no-restart --add "$app" >/dev/null 2>&1; then
-                success "✓ Added $app to Dock"
+            if app_exists "$app"; then
+                if dockutil --no-restart --add "$app" >/dev/null 2>&1; then
+                    success "✓ Added $app to Dock"
+                    ((added_count++))
+                else
+                    warn "Failed to add $app to Dock"
+                fi
             else
-                warn "Failed to add $app to Dock (may not be installed)"
+                if [[ "$VERBOSE" == true ]]; then
+                    info "Skipping $app (not installed)"
+                fi
             fi
         done
-        # Add spacer after each category
-        dockutil --no-restart --add '' --type small-spacer --section apps >/dev/null 2>&1
+        
+        # Add spacer after each category if apps were added
+        if [[ $added_count -gt 0 ]]; then
+            dockutil --no-restart --add '' --type small-spacer --section apps >/dev/null 2>&1
+        fi
     }
     
     info "Clearing existing Dock items..."

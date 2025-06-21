@@ -1,3 +1,6 @@
+# SSH Configuration with 1Password Integration
+# This config uses 1Password SSH agent for key management
+
 Host github-dev
 	HostName github.com
 	User git

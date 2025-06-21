@@ -467,11 +467,11 @@ main() {
     
     # Run setup steps
     check_platform
-    clone_repository
     ask_for_sudo
     update_macos
     install_xcode_cli_tools
     verify_installation
+    clone_repository
     install_homebrew
     install_brewfile
     verify_homebrew

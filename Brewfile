@@ -8,6 +8,7 @@ brew "dockutil"
 
 cask "1password"
 cask "1password-cli"
+cask "cursor"
 
 mas "Numbers", id: 409203825
 mas "Pages", id: 409201541

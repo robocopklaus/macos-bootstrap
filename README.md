@@ -81,7 +81,7 @@ The script installs the following tools and applications:
 
 ## Usage
 
-### Quick Start
+### Quick Start (Recommended for Remote Installs)
 
 After a fresh macOS install:
 
@@ -89,8 +89,10 @@ After a fresh macOS install:
 2. Run the following command:
 
    ```bash
-   bash <(curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/scripts/main.sh)
+   bash <(curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/bootstrap.sh)
    ```
+
+This will clone (or update) the repository to `~/.macos-bootstrap` and run the full setup from your local machine, ensuring all relative paths and scripts work correctly.
 
 ### Local Development
 
@@ -124,6 +126,7 @@ You can run individual modules for specific tasks:
 - `--dry-run` or `-d`: Preview what the script will do without making changes
 - `--verbose` or `-v`: Enable verbose output
 - `--help` or `-h`: Show help information
+- `--config <file>`: Use a custom configuration file
 
 Examples:
 
@@ -134,8 +137,8 @@ Examples:
 # Run with verbose output
 ./scripts/main.sh --verbose
 
-# Show help
-./scripts/main.sh --help
+# Use a custom config
+./scripts/main.sh --config my-custom-config.sh
 ```
 
 ## Configuration

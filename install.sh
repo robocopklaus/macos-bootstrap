@@ -163,7 +163,5 @@ main() {
 }
 
 # Script entry point
-# Check if script is being executed directly (not sourced)
-if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${BASH_SOURCE[0]:-}" ]]; then
-    main "$@"
-fi 
+# Always run main when script is executed (either directly or piped)
+main "$@" 

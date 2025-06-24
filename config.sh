@@ -58,6 +58,10 @@ SETUP_DOTFILES="${SETUP_DOTFILES:-true}"
 # Sets up SSH with 1Password integration
 CONFIGURE_SSH="${CONFIGURE_SSH:-true}"
 
+# Whether to configure macOS system defaults
+# Sets various macOS system preferences using the defaults command
+MACOS_DEFAULTS_ENABLED="${MACOS_DEFAULTS_ENABLED:-true}"
+
 # Whether to customize the Dock
 # Organizes applications in the Dock by category
 CUSTOMIZE_DOCK="${CUSTOMIZE_DOCK:-true}"
@@ -85,6 +89,14 @@ SSH_USE_1PASSWORD_AGENT="${SSH_USE_1PASSWORD_AGENT:-true}"
 # Path to 1Password SSH agent socket
 # Default location for 1Password SSH agent
 SSH_AGENT_SOCKET="${SSH_AGENT_SOCKET:-~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock}"
+
+# =============================================================================
+# MACOS DEFAULTS CONFIGURATION
+# =============================================================================
+
+# Whether macOS defaults configuration is enabled
+# Set to 'false' to skip macOS defaults configuration
+MACOS_DEFAULTS_ENABLED="${MACOS_DEFAULTS_ENABLED:-true}"
 
 # =============================================================================
 # LOGGING CONFIGURATION
@@ -157,6 +169,7 @@ export_config() {
     export INSTALL_APPLICATIONS
     export SETUP_DOTFILES
     export CONFIGURE_SSH
+    export MACOS_DEFAULTS_ENABLED
     export CUSTOMIZE_DOCK
     export DOCK_ENABLED
     export DOCK_CATEGORIES

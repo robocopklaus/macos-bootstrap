@@ -76,6 +76,7 @@ main() {
     # Configuration
     run_module "Dotfiles" "$SCRIPT_DIR/config/setup-dotfiles.sh" "SETUP_DOTFILES"
     run_module "SSH Config" "$SCRIPT_DIR/config/configure-ssh.sh" "CONFIGURE_SSH"
+    run_module "macOS Defaults" "$SCRIPT_DIR/config/configure-macos-defaults.sh" "MACOS_DEFAULTS_ENABLED"
     
     # Final setup
     run_module "Dock Setup" "$SCRIPT_DIR/apps/setup-dock.sh" "CUSTOMIZE_DOCK"

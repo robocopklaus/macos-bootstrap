@@ -12,6 +12,7 @@ A comprehensive script to bootstrap a fresh macOS installation with essential de
 - **Application Installation**: Installs applications via Brewfile
 - **SSH Configuration**: Sets up SSH config with 1Password integration
 - **Dock Customization**: Automatically configures Dock with organized application categories
+- **macOS Defaults**: Configures system preferences using the defaults command
 - **Comprehensive Logging**: Detailed logging of all operations
 - **Dry Run Mode**: Preview changes without making them
 - **Error Handling**: Robust error handling and cleanup
@@ -39,7 +40,8 @@ A comprehensive script to bootstrap a fresh macOS installation with essential de
     │   └── setup-dock.sh
     └── config/                 # Configuration setup
         ├── setup-dotfiles.sh
-        └── configure-ssh.sh
+        ├── configure-ssh.sh
+        └── configure-macos-defaults.sh
 ```
 
 ## What Gets Installed
@@ -130,6 +132,9 @@ You can run individual modules for specific tasks:
 
 # Configure only SSH
 ./scripts/config/configure-ssh.sh
+
+# Configure only macOS defaults
+./scripts/config/configure-macos-defaults.sh
 ```
 
 ### Options
@@ -175,6 +180,7 @@ The project uses `config.sh` for configuration. You can customize:
 - Installation options (what to install)
 - Dock customization settings
 - SSH configuration
+- macOS defaults configuration
 - Logging preferences
 
 Example configuration:
@@ -192,6 +198,7 @@ INSTALL_HOMEBREW=true
 INSTALL_APPLICATIONS=true
 SETUP_DOTFILES=true
 CONFIGURE_SSH=true
+MACOS_DEFAULTS_ENABLED=true
 CUSTOMIZE_DOCK=true
 
 # Dock Configuration
@@ -277,6 +284,62 @@ The script automatically organizes your Dock into categories:
 - **Productivity**: ChatGPT, GCal, Calendar
 - **Development**: Cursor, Ghostty
 - **System**: System Settings
+
+### macOS Defaults Configuration
+
+The script configures various macOS system preferences using the `defaults` command:
+
+#### Dock Settings
+- Auto-hide Dock with no delay
+- Enable magnification
+- Hide recent applications
+- Set minimize effect to scale
+- Show running application indicators
+
+#### Finder Settings
+- Show all filename extensions
+- Show path bar, status bar, sidebar, and tab bar
+- Show preview column
+- Default view to list style
+- Show hidden files and library folder
+- Disable extension change warnings
+- Keep folders on top when sorting
+- Search current folder by default
+
+#### System Preferences
+- Disable automatic capitalization, period substitution, quote substitution, and dash substitution
+- Enable key repeat with fast settings
+- Disable automatic spelling correction
+- Enable natural scroll direction
+- Disable automatic brightness and time zone adjustment
+
+#### Security Settings
+- Disable automatic login
+- Require password immediately after sleep
+- Disable guest access
+- Disable remote login
+
+#### Trackpad Settings
+- Enable tap to click
+- Enable three finger drag
+- Enable secondary click
+
+#### Keyboard Settings
+- Enable function keys
+- Set fast keyboard repeat rate
+- Disable press and hold for special characters
+
+#### Safari Settings
+- Enable developer and debug menus
+- Disable auto-fill features
+- Disable search suggestions and preload
+- Disable auto-open safe downloads
+
+#### Other Settings
+- Disable Photos app auto-open
+- Disable automatic software updates
+- Disable crash reporter dialog
+- Disable disk image verification
 
 ## Requirements
 

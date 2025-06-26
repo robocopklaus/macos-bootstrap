@@ -28,6 +28,9 @@ brew "antidote"
 # Dock customization utility
 brew "dockutil"
 
+# API development and testing platform
+cask "postman"
+
 # =============================================================================
 # SECURITY & PRIVACY
 # =============================================================================
@@ -66,6 +69,9 @@ cask "ghostty"
 
 # Team communication platform
 cask "slack"
+
+# WhatsApp client
+cask "whatsapp"
 
 # =============================================================================
 # BROWSERS & WEB

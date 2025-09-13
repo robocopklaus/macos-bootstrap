@@ -7,6 +7,7 @@ set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Configuration
@@ -31,7 +32,7 @@ set_default() {
         return 0
     fi
     
-    if defaults write "$domain" "$key" -$data_type "$value"; then
+    if defaults write "$domain" "$key" -"$data_type" "$value"; then
         success "✓ Set $domain $key = $value ($data_type)"
     else
         error "✗ Failed to set $domain $key = $value ($data_type)"

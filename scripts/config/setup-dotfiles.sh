@@ -7,6 +7,7 @@ set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -62,7 +63,8 @@ setup_dotfiles() {
             fi
         elif [[ -f "$target" ]]; then
             # Backup existing file
-            local backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
+            local backup
+            backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
             info "Backing up existing file: $target -> $backup"
             mv "$target" "$backup"
             ln -s "$dotfile" "$target"

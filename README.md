@@ -143,6 +143,7 @@ You can run individual modules for specific tasks:
 - `--verbose` or `-v`: Enable verbose output
 - `--help` or `-h`: Show help information
 - `--config <file>`: Use a custom configuration file
+- `--yes` or `-y`: Non-interactive mode; auto-confirm prompts (e.g., macOS updates)
 
 Examples:
 
@@ -155,6 +156,9 @@ Examples:
 
 # Use a custom config
 ./scripts/main.sh --config my-custom-config.sh
+
+# Non-interactive run (auto-confirm prompts)
+./scripts/main.sh --yes
 ```
 
 ## Installation Flow
@@ -349,7 +353,23 @@ The script configures various macOS system preferences using the `defaults` comm
 
 ## Logging
 
-The script creates detailed logs at `/tmp/macos-bootstrap-YYYYMMDD-HHMMSS.log` for troubleshooting and verification.
+All modules write to a single log file per run. The path is printed at start (default: `/tmp/macos-bootstrap-YYYYMMDD-HHMMSS.log`).
+
+To override the log location, set `LOG_FILE` before running, for example:
+
+```bash
+LOG_FILE="$HOME/macos-bootstrap.log" ./scripts/main.sh --verbose
+```
+
+Use `--dry-run` to preview actions without changes.
+
+## Continuous Integration
+
+This repo includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that runs:
+- Bash syntax checks (`bash -n`) across all scripts
+- ShellCheck linting with source following (`shellcheck -x`)
+
+ShellCheck is included in the Brewfile for local linting.
 
 ## Troubleshooting
 

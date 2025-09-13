@@ -7,6 +7,7 @@ set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -73,7 +74,8 @@ setup_ssh_config() {
         fi
     elif [[ -f "$ssh_config_target" ]]; then
         # Backup existing file
-        local backup="$ssh_config_target.backup.$(date +%Y%m%d-%H%M%S)"
+        local backup
+        backup="$ssh_config_target.backup.$(date +%Y%m%d-%H%M%S)"
         info "Backing up existing SSH config: $ssh_config_target -> $backup"
         mv "$ssh_config_target" "$backup"
         ln -sf "$ssh_config_source" "$ssh_config_target"

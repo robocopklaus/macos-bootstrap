@@ -7,6 +7,7 @@ set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Check if application exists
@@ -65,8 +66,13 @@ setup_dock() {
     if [[ "$DRY_RUN" != true ]]; then
         local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
         if [[ -f "$dock_plist" ]]; then
-            local backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
-            cp "$dock_plist" "$backup" && success "✓ Backed up Dock plist to $backup" || warn "Failed to back up Dock plist"
+            local backup
+            backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
+            if cp "$dock_plist" "$backup"; then
+                success "✓ Backed up Dock plist to $backup"
+            else
+                warn "Failed to back up Dock plist"
+            fi
         fi
     fi
     if dockutil --no-restart --remove all >/dev/null 2>&1; then
@@ -130,7 +136,7 @@ setup_dock() {
         warn "Failed to add Applications folder to Dock"
     fi
     
-    if dockutil --no-restart --add '~/Downloads' --view auto --display folder --sort dateadded >/dev/null 2>&1; then
+    if dockutil --no-restart --add "$HOME/Downloads" --view auto --display folder --sort dateadded >/dev/null 2>&1; then
         success "✓ Added Downloads folder to Dock"
     else
         warn "Failed to add Downloads folder to Dock"

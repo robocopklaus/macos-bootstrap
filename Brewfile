@@ -28,6 +28,9 @@ brew "antidote"
 # Dock customization utility
 brew "dockutil"
 
+# Oh My Posh - https://ohmyposh.dev/docs/installation/macos
+brew "oh-my-posh"
+
 # API development and testing platform
 cask "postman"
 
@@ -79,9 +82,6 @@ cask "whatsapp"
 
 # Web browser
 cask "google-chrome"
-
-# Privacy-focused browser
-cask "zen"
 
 # URL redirector for better browsing
 cask "finicky"

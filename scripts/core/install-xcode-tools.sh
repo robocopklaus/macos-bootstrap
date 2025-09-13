@@ -2,9 +2,8 @@
 
 # Xcode Command Line Tools Installation
 # Description: Installs Xcode CLI tools if not present
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -135,5 +134,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

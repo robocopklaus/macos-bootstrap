@@ -3,7 +3,7 @@
 # macOS Defaults Configuration Script
 # This script configures various macOS system preferences using the `defaults` command
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,7 +31,7 @@ set_default() {
         return 0
     fi
     
-    if defaults write "$domain" "$key" "-$data_type" "$value" 2>/dev/null; then
+    if defaults write "$domain" "$key" -$data_type "$value"; then
         success "✓ Set $domain $key = $value ($data_type)"
     else
         error "✗ Failed to set $domain $key = $value ($data_type)"
@@ -117,14 +117,18 @@ configure_finder() {
     set_bool "com.apple.finder" "ShowStatusBar" "true" "Show status bar"
     set_string "com.apple.finder" "FXPreferredViewStyle" "clmv" "Set default view style to column view"
 
-    # Unhide Library folder
- 
-
-    # Show item info near icons on the desktop
-    /usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:showItemInfo true" ~/Library/Preferences/com.apple.finder.plist
-
-    # Sort items by name on the desktop
-    /usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:arrangeBy name" ~/Library/Preferences/com.apple.finder.plist
+    # Update Finder plist if present
+    local finder_plist="$HOME/Library/Preferences/com.apple.finder.plist"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "[DRY RUN] Would update Finder plist: show item info and arrange by name"
+    else
+        if [[ -f "$finder_plist" ]]; then
+            /usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:showItemInfo true" "$finder_plist" || warn "Could not set showItemInfo"
+            /usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:arrangeBy name" "$finder_plist" || warn "Could not set arrangeBy"
+        else
+            warn "Finder plist not found at $finder_plist; skipping PlistBuddy edits"
+        fi
+    fi
 }
 
 # Function to configure system preferences
@@ -242,6 +246,7 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     parse_args "$@"
     main
-fi
+fi 

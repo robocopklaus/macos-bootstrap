@@ -2,14 +2,16 @@
 
 # macOS Bootstrap Main Script
 # Description: Orchestrates the modular bootstrap process
-# Version: 2.0.0
-# Author: macOS Bootstrap Project
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
+
+# Ensure single-run log file for all modules
+LOG_FILE="${LOG_FILE:-/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log}"
+export LOG_FILE
 
 # Load configuration
 if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
@@ -51,6 +53,7 @@ run_module() {
 
 # Main execution function
 main() {
+    setup_traps
     info "Starting macOS bootstrap setup"
     info "Log file: $LOG_FILE"
     

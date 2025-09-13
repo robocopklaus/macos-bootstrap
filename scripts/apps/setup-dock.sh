@@ -2,9 +2,8 @@
 
 # Dock Setup
 # Description: Customizes Dock with organized application categories
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,6 +61,14 @@ setup_dock() {
     }
     
     info "Clearing existing Dock items..."
+    # Backup Dock plist before modification
+    if [[ "$DRY_RUN" != true ]]; then
+        local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
+        if [[ -f "$dock_plist" ]]; then
+            local backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
+            cp "$dock_plist" "$backup" && success "✓ Backed up Dock plist to $backup" || warn "Failed to back up Dock plist"
+        fi
+    fi
     if dockutil --no-restart --remove all >/dev/null 2>&1; then
         success "✓ Cleared existing Dock items"
     else
@@ -147,5 +154,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

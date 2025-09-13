@@ -2,22 +2,20 @@
 
 # Dotfiles Setup
 # Description: Creates symlinks for dotfiles
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Configuration
-readonly MACOS_BOOTSTRAP_DIR="$HOME/.macos-bootstrap"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Create symlinks for dotfiles
 setup_dotfiles() {
     info "Setting up dotfiles..."
     
-    local files_dir="$MACOS_BOOTSTRAP_DIR/files"
+    local files_dir="$REPO_ROOT/files"
     
     if [[ ! -d "$files_dir" ]]; then
         warn "Files directory not found at: $files_dir"
@@ -89,5 +87,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

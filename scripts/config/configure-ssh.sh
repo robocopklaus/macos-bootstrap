@@ -2,16 +2,14 @@
 
 # SSH Configuration
 # Description: Sets up SSH config with 1Password integration
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Configuration
-readonly MACOS_BOOTSTRAP_DIR="$HOME/.macos-bootstrap"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Check if 1Password is available
 check_1password_agent() {
@@ -32,7 +30,7 @@ setup_ssh_config() {
     info "Setting up SSH config symlink..."
     
     local ssh_dir="$HOME/.ssh"
-    local ssh_config_source="$MACOS_BOOTSTRAP_DIR/files/ssh/config"
+    local ssh_config_source="$REPO_ROOT/files/ssh/config"
     local ssh_config_target="$ssh_dir/config"
     
     if [[ "$DRY_RUN" == true ]]; then
@@ -98,5 +96,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

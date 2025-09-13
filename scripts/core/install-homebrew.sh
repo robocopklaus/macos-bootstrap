@@ -2,9 +2,8 @@
 
 # Homebrew Installation
 # Description: Installs Homebrew package manager
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,7 +26,7 @@ install_homebrew() {
     fi
     
     # Install Homebrew
-    if /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+    if run /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
         success "Homebrew installed successfully"
         
         # Add Homebrew to PATH for current session
@@ -39,9 +38,29 @@ install_homebrew() {
             eval "$(/usr/local/bin/brew shellenv)"
         fi
         
+        # Persist Homebrew to shell profiles if possible
+        local shellenv_cmd
+        if command -v brew >/dev/null 2>&1; then
+            shellenv_cmd="$(brew shellenv)"
+            # zsh default
+            if [[ -n "${HOME:-}" ]]; then
+                for profile in "$HOME/.zprofile" "$HOME/.zshrc" "$HOME/.profile"; do
+                    if [[ -f "$profile" ]] && grep -q "brew shellenv" "$profile"; then
+                        continue
+                    fi
+                    if [[ "$DRY_RUN" == true ]]; then
+                        info "DRY RUN: Would append Homebrew shellenv to $profile"
+                    else
+                        printf '\n# Homebrew\n%s\n' "$shellenv_cmd" >> "$profile"
+                        success "Added Homebrew shellenv to $profile"
+                    fi
+                done
+            fi
+        fi
+
         # Update Homebrew
         info "Updating Homebrew..."
-        brew update
+        run brew update
         success "Homebrew updated"
     else
         error "Failed to install Homebrew"
@@ -72,5 +91,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

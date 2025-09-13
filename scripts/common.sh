@@ -2,7 +2,6 @@
 
 # Common functions for macOS bootstrap scripts
 # Description: Shared utilities and functions
-# Version: 1.0.0
 
 # Load configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,8 +12,10 @@ fi
 
 # Configuration
 readonly SCRIPT_NAME="$(basename "$0")"
-readonly LOG_FILE="/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log"
-readonly TEMP_DIR="/tmp/macos-bootstrap-$$"
+# Respect pre-set LOG_FILE/TEMP_DIR to enable single-run logging across modules
+LOG_FILE="${LOG_FILE:-/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log}"
+TEMP_DIR="${TEMP_DIR:-/tmp/macos-bootstrap-$$}"
+export LOG_FILE TEMP_DIR
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -27,6 +28,7 @@ readonly NC='\033[0m' # No Color
 DRY_RUN=${DRY_RUN:-${DRY_RUN_MODE:-false}}
 VERBOSE=${VERBOSE:-${VERBOSE_LOGGING:-false}}
 SUDO_PID=${SUDO_PID:-""}
+NON_INTERACTIVE=${NON_INTERACTIVE:-false}
 
 # Logging functions
 log() {
@@ -41,6 +43,15 @@ info() { log "INFO" "$*"; }
 warn() { log "WARN" "${YELLOW}$*${NC}"; }
 error() { log "ERROR" "${RED}$*${NC}"; }
 success() { log "SUCCESS" "${GREEN}$*${NC}"; }
+
+# Helper to run commands with DRY_RUN awareness
+run() {
+    if [[ "$DRY_RUN" == true ]]; then
+        warn "DRY RUN: Would run: $*"
+        return 0
+    fi
+    "$@"
+}
 
 # Cleanup function
 cleanup() {
@@ -71,9 +82,13 @@ error_handler() {
     exit "$exit_code"
 }
 
-# Set up error handling
-trap error_handler ERR
-trap cleanup EXIT
+# Trap setup is opt-in to avoid side effects when sourcing.
+setup_traps() {
+    # Ensure ERR traps propagate into functions and subshells
+    set -E
+    trap error_handler ERR
+    trap cleanup EXIT
+}
 
 # Check if running on macOS
 check_platform() {
@@ -128,6 +143,7 @@ Options:
     -v, --verbose    Enable verbose output
     -h, --help       Show this help message
     -c, --config     Specify custom configuration file
+    -y, --yes        Non-interactive mode; auto-confirm prompts
 
 Description:
     This script safely updates macOS and installs essential development tools.
@@ -142,6 +158,7 @@ Examples:
     $SCRIPT_NAME --dry-run          # Preview changes
     $SCRIPT_NAME --verbose          # Run with verbose output
     $SCRIPT_NAME --config my-config.sh  # Use custom config
+    $SCRIPT_NAME --yes                  # Auto-confirm prompts
 
 EOF
 }
@@ -156,6 +173,10 @@ parse_args() {
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                shift
+                ;;
+            -y|--yes)
+                NON_INTERACTIVE=true
                 shift
                 ;;
             -c|--config)
@@ -182,4 +203,4 @@ parse_args() {
                 ;;
         esac
     done
-} 
+}

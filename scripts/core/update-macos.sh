@@ -2,9 +2,8 @@
 
 # macOS Updates
 # Description: Safely checks for and installs available macOS updates
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -47,14 +46,17 @@ update_macos() {
     info "Checking for macOS updates..."
     
     if ! check_for_updates; then
-        echo
-        warn "Updates are available. This may include system updates that require a restart."
-        echo -n "Do you want to install available updates? (y/N): "
-        read -r response
-        
-        if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            warn "Skipping macOS updates"
-            return 0
+        if [[ "$NON_INTERACTIVE" != true ]]; then
+            echo
+            warn "Updates are available. This may include system updates that require a restart."
+            echo -n "Do you want to install available updates? (y/N): "
+            read -r response
+            if [[ ! "$response" =~ ^[Yy]$ ]]; then
+                warn "Skipping macOS updates"
+                return 0
+            fi
+        else
+            info "Non-interactive mode enabled; proceeding with updates."
         fi
         
         if [[ "$DRY_RUN" == true ]]; then
@@ -80,5 +82,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

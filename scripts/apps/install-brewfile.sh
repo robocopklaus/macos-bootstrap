@@ -2,16 +2,14 @@
 
 # Brewfile Installation
 # Description: Installs applications from Brewfile
-# Version: 1.0.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Configuration
-readonly MACOS_BOOTSTRAP_DIR="$HOME/.macos-bootstrap"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Install applications from Brewfile
 install_brewfile() {
@@ -22,8 +20,8 @@ install_brewfile() {
         return 0
     fi
     
-    # Use the Brewfile from the cloned repository
-    local brewfile_path="$MACOS_BOOTSTRAP_DIR/Brewfile"
+    # Use the Brewfile from the repository root
+    local brewfile_path="$REPO_ROOT/Brewfile"
     
     if [[ ! -f "$brewfile_path" ]]; then
         error "Brewfile not found at: $brewfile_path"
@@ -33,7 +31,7 @@ install_brewfile() {
     info "Using Brewfile: $brewfile_path"
     
     # Install from Brewfile
-    if brew bundle --file="$brewfile_path"; then
+    if run brew bundle --file="$brewfile_path"; then
         success "Applications installed successfully from Brewfile"
     else
         error "Failed to install applications from Brewfile"
@@ -48,5 +46,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    setup_traps
     main
 fi 

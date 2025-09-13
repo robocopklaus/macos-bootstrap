@@ -86,6 +86,9 @@ cask "google-chrome"
 # URL redirector for better browsing
 cask "finicky"
 
+# Privacy-focused browser
+cask "zen"
+
 # =============================================================================
 # MEDIA & ENTERTAINMENT
 # =============================================================================

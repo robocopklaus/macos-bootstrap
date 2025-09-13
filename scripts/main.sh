@@ -16,6 +16,7 @@ export LOG_FILE
 
 # Load configuration
 if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
+    # shellcheck source=../config.sh
     source "$SCRIPT_DIR/../config.sh"
     export_config
 fi

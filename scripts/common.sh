@@ -5,13 +5,16 @@
 
 # Load configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../config.sh
 if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
     source "$SCRIPT_DIR/../config.sh"
     export_config
 fi
 
 # Configuration
-readonly SCRIPT_NAME="$(basename "$0")"
+# Avoid SC2155: declare and assign separately
+SCRIPT_NAME="$(basename "$0")"
+readonly SCRIPT_NAME
 # Respect pre-set LOG_FILE/TEMP_DIR to enable single-run logging across modules
 LOG_FILE="${LOG_FILE:-/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log}"
 TEMP_DIR="${TEMP_DIR:-/tmp/macos-bootstrap-$$}"
@@ -21,7 +24,6 @@ export LOG_FILE TEMP_DIR
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
 # Global variables (can be overridden by calling scripts or config)
@@ -35,7 +37,8 @@ log() {
     local level="$1"
     shift
     local message="$*"
-    local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+    local timestamp
+    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
     echo -e "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
 }
 

@@ -87,7 +87,8 @@ setup_dock() {
     # Backup Dock plist before modification
     local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
     if [[ -f "$dock_plist" ]]; then
-        local backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
+        local backup
+        backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
         if cp "$dock_plist" "$backup"; then
             success "✓ Backed up Dock plist to $backup"
         else

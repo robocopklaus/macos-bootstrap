@@ -1,13 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# macOS Defaults Configuration Script
-# This script configures various macOS system preferences using the `defaults` command
+# macOS Defaults Configuration
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Configuration
@@ -247,7 +242,7 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    setup_traps
+    init_script
     parse_args "$@"
     main
 fi 

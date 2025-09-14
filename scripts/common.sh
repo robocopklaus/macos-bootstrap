@@ -85,6 +85,12 @@ error_handler() {
     exit "$exit_code"
 }
 
+# Shared script initialization
+init_script() {
+    set -Eeuo pipefail
+    setup_traps
+}
+
 # Trap setup is opt-in to avoid side effects when sourcing.
 setup_traps() {
     # Ensure ERR traps propagate into functions and subshells

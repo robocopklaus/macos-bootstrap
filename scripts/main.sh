@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 # macOS Bootstrap Main Script
-# Description: Orchestrates the modular bootstrap process
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=common.sh
 source "$SCRIPT_DIR/common.sh"
 
 # Ensure single-run log file for all modules
@@ -76,15 +71,12 @@ main() {
     
     # Install tools and applications
     run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW"
-    run_module "Applications" "$SCRIPT_DIR/apps/install-brewfile.sh" "INSTALL_APPLICATIONS"
-    
+    run_module "Applications & Dock" "$SCRIPT_DIR/apps/setup-apps.sh" "INSTALL_APPLICATIONS"
+
     # Configuration
     run_module "Dotfiles" "$SCRIPT_DIR/config/setup-dotfiles.sh" "SETUP_DOTFILES"
     run_module "SSH Config" "$SCRIPT_DIR/config/configure-ssh.sh" "CONFIGURE_SSH"
     run_module "macOS Defaults" "$SCRIPT_DIR/config/configure-macos-defaults.sh" "MACOS_DEFAULTS_ENABLED"
-    
-    # Final setup
-    run_module "Dock Setup" "$SCRIPT_DIR/apps/setup-dock.sh" "CUSTOMIZE_DOCK"
     
     success "macOS bootstrap setup completed successfully!"
     info "Log file saved to: $LOG_FILE"
@@ -92,6 +84,7 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    init_script
     parse_args "$@"
     main
 fi 

@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 # Xcode Command Line Tools Installation
-# Description: Installs Xcode CLI tools if not present
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Check if Xcode CLI tools are installed
@@ -135,6 +130,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    setup_traps
+    init_script
     main
 fi 

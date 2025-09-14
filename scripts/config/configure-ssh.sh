@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 # SSH Configuration
-# Description: Sets up SSH config with 1Password integration
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -98,6 +93,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    setup_traps
+    init_script
     main
 fi 

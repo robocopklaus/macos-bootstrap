@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 # macOS Updates
-# Description: Safely checks for and installs available macOS updates
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Check for available updates
@@ -83,6 +78,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    setup_traps
+    init_script
     main
 fi 

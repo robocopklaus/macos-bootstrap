@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 # Homebrew Installation
-# Description: Installs Homebrew package manager
 
-set -Eeuo pipefail
-
-# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../common.sh
 source "$SCRIPT_DIR/../common.sh"
 
 # Install Homebrew
@@ -92,6 +87,6 @@ main() {
 
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    setup_traps
+    init_script
     main
 fi 

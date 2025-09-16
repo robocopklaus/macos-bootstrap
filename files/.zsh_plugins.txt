@@ -7,9 +7,6 @@ ohmyzsh/ohmyzsh path:plugins/colored-man-pages
 # Handling command not found situations
 ohmyzsh/ohmyzsh path:plugins/command-not-found
 
-# Powerlevel10k: A fast and feature-rich Zsh prompt
-# romkatv/powerlevel10k
-
 # z: Tracks your most visited directories for quick access
 rupa/z
 

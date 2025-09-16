@@ -11,6 +11,10 @@ export PATH="$HOME/.local/bin:$PATH"
 # Homebrew environment setup
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# --------------------------------
+# Zsh Customization
+# --------------------------------
+
 # Oh My Posh: A prompt engine for any shell
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/theme.omp.json)"
 

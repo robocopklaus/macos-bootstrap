@@ -29,6 +29,12 @@ install_brewfile() {
         return 0
     fi
 
+    # Ensure brew command is available in this shell
+    if ! ensure_brew_in_path; then
+        error "brew not found. Ensure Homebrew is installed and available in PATH"
+        return 1
+    fi
+
     local brewfile_path="$REPO_ROOT/Brewfile"
 
     if [[ ! -f "$brewfile_path" ]]; then

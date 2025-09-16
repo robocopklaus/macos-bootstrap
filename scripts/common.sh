@@ -56,6 +56,45 @@ run() {
     "$@"
 }
 
+# Ensure Homebrew is available in PATH for the current session
+ensure_brew_in_path() {
+    if command -v brew >/dev/null 2>&1; then
+        return 0
+    fi
+
+    local brew_bin=""
+    if [[ -x "/opt/homebrew/bin/brew" ]]; then
+        brew_bin="/opt/homebrew/bin/brew"
+    elif [[ -x "/usr/local/bin/brew" ]]; then
+        brew_bin="/usr/local/bin/brew"
+    fi
+
+    if [[ -n "$brew_bin" ]]; then
+        # Use brew shellenv to configure PATH and related vars
+        # shellcheck disable=SC2046
+        eval "$($brew_bin shellenv)"
+        if command -v brew >/dev/null 2>&1; then
+            info "Configured Homebrew environment for current session"
+            return 0
+        fi
+    fi
+
+    # Fallback: prepend common brew bin directories
+    if [[ -d "/opt/homebrew/bin" ]]; then
+        export PATH="/opt/homebrew/bin:$PATH"
+    fi
+    if [[ -d "/usr/local/bin" ]]; then
+        export PATH="/usr/local/bin:$PATH"
+    fi
+
+    if command -v brew >/dev/null 2>&1; then
+        return 0
+    fi
+
+    warn "Homebrew not found in PATH"
+    return 1
+}
+
 # Cleanup function
 cleanup() {
     info "Cleaning up..."

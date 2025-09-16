@@ -31,8 +31,11 @@ brew "dockutil"
 # Oh My Posh - https://ohmyposh.dev/docs/installation/macos
 brew "oh-my-posh"
 
-# Shell script linter
-brew "shellcheck"
+# OpenAI Codex
+brew "codex"
+
+# opencode
+brew "opencode"
 
 # API development and testing platform
 cask "postman"

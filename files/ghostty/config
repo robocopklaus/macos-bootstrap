@@ -2,3 +2,4 @@
 #
 font-family = "MesloLGM Nerd Font"
 quit-after-last-window-closed = true
+theme = "Material Design Colors"

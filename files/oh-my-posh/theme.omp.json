@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 3,
+  "final_space": true,
+  "palette": {
+        "blue":  "#8AADF4",
+        "white": "#FFFFFF"
+  },
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "os",
+          "style": "diamond",
+          "background": "p:blue",
+          "foreground": "p:white",
+          "leading_diamond": "\ue0b6",
+          "trailing_diamond": "\ue0b4",
+          "template": "{{.Icon}} "
+        }
+      ]
+    }
+  ]
+}

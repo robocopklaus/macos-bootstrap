@@ -17,6 +17,28 @@ else
     fi
 fi
 
+# Get target path for a given source file
+get_target_path() {
+    local source_file="$1"
+    local filename
+    filename=$(basename "$source_file")
+    local default_target="$HOME/$filename"
+    
+    # App-specific configuration mappings
+    case "$source_file" in
+        */ghostty/config)
+            echo "$HOME/.config/ghostty/config"
+            ;;
+        */oh-my-posh/theme.omp.json)
+            echo "$HOME/.config/oh-my-posh/theme.omp.json"
+            ;;
+        *)
+            # Default: place in home directory
+            echo "$default_target"
+            ;;
+    esac
+}
+
 # Create symlinks for dotfiles
 setup_dotfiles() {
     info "Setting up dotfiles..."
@@ -36,21 +58,16 @@ setup_dotfiles() {
     
     while IFS= read -r -d '' dotfile; do
         dotfiles_found=true
-        local filename
-        filename=$(basename "$dotfile")
-        local target="$HOME/$filename"
-        
-        # Special handling for Ghostty config
-        if [[ "$dotfile" == *"/ghostty/config" ]]; then
-            target="$HOME/.config/ghostty/config"
-            # Ensure the target directory exists
-            if [[ "$DRY_RUN" != true ]]; then
-                mkdir -p "$(dirname "$target")"
-            fi
-        fi
+        local target
+        target=$(get_target_path "$dotfile")
         
         if [[ "$VERBOSE" == true ]]; then
             info "Processing dotfile: $dotfile -> $target"
+        fi
+        
+        # Ensure the target directory exists for non-standard locations
+        if [[ "$target" != "$HOME/$(basename "$dotfile")" && "$DRY_RUN" != true ]]; then
+            mkdir -p "$(dirname "$target")"
         fi
         
         if [[ "$DRY_RUN" == true ]]; then
@@ -88,7 +105,7 @@ setup_dotfiles() {
             ln -s "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
-    done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" \) -type f -print0 2>/dev/null || true)
+    done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" -o -path "*/oh-my-posh/*" \) -type f -print0 2>/dev/null || true)
     
     if [[ "$dotfiles_found" == false ]]; then
         info "No dotfiles found in $files_dir"

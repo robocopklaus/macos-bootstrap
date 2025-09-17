@@ -40,6 +40,15 @@ setup_dotfiles() {
         filename=$(basename "$dotfile")
         local target="$HOME/$filename"
         
+        # Special handling for Ghostty config
+        if [[ "$dotfile" == *"/ghostty/config" ]]; then
+            target="$HOME/.config/ghostty/config"
+            # Ensure the target directory exists
+            if [[ "$DRY_RUN" != true ]]; then
+                mkdir -p "$(dirname "$target")"
+            fi
+        fi
+        
         if [[ "$VERBOSE" == true ]]; then
             info "Processing dotfile: $dotfile -> $target"
         fi
@@ -79,7 +88,7 @@ setup_dotfiles() {
             ln -s "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
-    done < <(find "$files_dir" -name ".*" -type f -print0 2>/dev/null || true)
+    done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" \) -type f -print0 2>/dev/null || true)
     
     if [[ "$dotfiles_found" == false ]]; then
         info "No dotfiles found in $files_dir"

@@ -40,6 +40,9 @@ brew "opencode"
 # API development and testing platform
 cask "postman"
 
+# Meslo LG Nerd Font
+cask "font-meslo-lg-nerd-font"
+
 # =============================================================================
 # SECURITY & PRIVACY
 # =============================================================================

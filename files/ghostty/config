@@ -1,5 +1,6 @@
 # This is the configuration file for Ghostty.
 #
 font-family = "MesloLGM Nerd Font"
+font-size = 14
 quit-after-last-window-closed = true
 theme = "Material Design Colors"

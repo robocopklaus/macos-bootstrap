@@ -3,24 +3,86 @@
   "version": 3,
   "final_space": true,
   "palette": {
-        "blue":  "#8AADF4",
-        "white": "#FFFFFF"
+        "blue":  "blue",
+        "green": "green",
+        "red": "red",
+        "yellow": "yellow",
+        "black": "black",
+        "white": "lightWhite"
   },
   "blocks": [
     {
       "type": "prompt",
       "alignment": "left",
+      "leading_diamond": "\ue0b6",
+      "trailing_diamond": "\ue0b4",
       "segments": [
         {
           "type": "os",
           "style": "diamond",
-          "background": "p:blue",
-          "foreground": "p:white",
-          "leading_diamond": "\ue0b6",
+          "background": "p:white",
+          "foreground": "p:black",
           "trailing_diamond": "\ue0b4",
           "template": "{{.Icon}} "
+        },
+        {
+          "type": "path",
+          "style": "diamond",
+          "background": "p:blue",
+          "foreground": "p:white",
+          "trailing_diamond": "\ue0b4",
+          "properties": {
+            "style": "full",
+            "home_icon": "\uf015 ",
+            "mapped_locations": {
+              "~/Development": "\uf121",
+              "~/Downloads": "\uf0ed"
+            }
+          }
+        },
+        {
+          "type": "git",
+          "style": "diamond",
+          "background": "p:green",
+          "foreground": "p:black",
+          "background_templates": [
+            "{{ if or (.Working.Changed) (.Staging.Changed) }}p:yellow{{ end }}"
+          ],
+          "properties": {
+            "fetch_status": true,
+            "fetch_upstream_icon": true
+          }
         }
       ]
+    },
+    {
+      "type": "rprompt",
+      "alignment": "right",
+      "leading_diamond": "\ue0b6",
+      "trailing_diamond": "\ue0b4",
+      "segments": [
+        {
+          "type": "status",
+          "style": "diamond",
+          "background": "p:green",
+          "foreground": "p:white",
+          "template": "{{ if eq .Code 0 }}\uf00c{{ else }}\uf071{{ end }} ",
+          "background_templates": [
+            "{{ if eq .Code 0 }}p:green{{ end }}",
+            "{{ if eq .Code 1 }}p:red{{ end }}"
+          ]
+        },
+        {
+          "type": "executiontime",
+          "style": "diamond",
+          "background": "p:black",
+          "foreground": "p:white",
+          "template": " \uf252 {{ .FormattedMs }} ",
+          "properties": {
+            "style": "round"
+          }
+        }
+      ]      
     }
   ]
 }

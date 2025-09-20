@@ -35,8 +35,8 @@
             "style": "full",
             "home_icon": "\uf015 ",
             "mapped_locations": {
-              "~/Development": "\uf121",
-              "~/Downloads": "\uf0ed"
+              "~/Development": "\uf121 ",
+              "~/Downloads": "\uf0ed "
             }
           }
         },

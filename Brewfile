@@ -75,6 +75,9 @@ cask "home-assistant"
 # Terminal emulator
 cask "ghostty"
 
+# Docker
+cask "docker-desktop"
+
 # =============================================================================
 # COMMUNICATION
 # =============================================================================

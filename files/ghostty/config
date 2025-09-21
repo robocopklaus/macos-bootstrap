@@ -2,5 +2,6 @@
 #
 font-family = "MesloLGM Nerd Font"
 font-size = 14
+keybind = shift+enter=text:\x1b\r
 quit-after-last-window-closed = true
 theme = "Material Design Colors"

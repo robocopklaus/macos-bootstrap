@@ -184,6 +184,69 @@ ask_for_sudo() {
     fi
 }
 
+# Resolve repository root robustly (env → git → relative fallback)
+# Usage: REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
+resolve_repo_root() {
+    local script_dir="$1"
+
+    # Use exported REPO_ROOT if present
+    if [[ -n "${REPO_ROOT:-}" && -d "$REPO_ROOT" ]]; then
+        echo "$REPO_ROOT"
+        return 0
+    fi
+
+    # Try git to find the top-level
+    if command -v git >/dev/null 2>&1; then
+        local git_root
+        git_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || true)"
+        if [[ -n "$git_root" && -d "$git_root" ]]; then
+            echo "$git_root"
+            return 0
+        fi
+    fi
+
+    # Fallback to relative path from script directory
+    echo "$(cd "$script_dir/../.." && pwd)"
+}
+
+# Create symlink with backup support (idempotent)
+# Usage: create_symlink "/source/file" "/target/link"
+create_symlink() {
+    local source="$1"
+    local target="$2"
+
+    if [[ "$DRY_RUN" == true ]]; then
+        if [[ -L "$target" ]]; then
+            info "DRY RUN: Would update symlink $target -> $source"
+        elif [[ -f "$target" ]]; then
+            warn "DRY RUN: Would backup $target and create symlink to $source"
+        else
+            info "DRY RUN: Would create symlink $target -> $source"
+        fi
+        return 0
+    fi
+
+    if [[ -L "$target" ]]; then
+        if [[ "$(readlink "$target")" == "$source" ]]; then
+            success "✓ Symlink already exists: $target"
+        else
+            info "Updating symlink: $target"
+            ln -sf "$source" "$target"
+            success "✓ Updated symlink: $target"
+        fi
+    elif [[ -f "$target" ]]; then
+        local backup
+        backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
+        info "Backing up existing file: $target -> $backup"
+        mv "$target" "$backup"
+        ln -sf "$source" "$target"
+        success "✓ Created symlink: $target (backed up original to $backup)"
+    else
+        ln -sf "$source" "$target"
+        success "✓ Created symlink: $target"
+    fi
+}
+
 # Display usage information
 show_usage() {
     cat << EOF

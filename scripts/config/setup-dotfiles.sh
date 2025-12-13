@@ -5,17 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Resolve repository root robustly (env → git → relative)
-if [[ -n "${REPO_ROOT:-}" && -d "$REPO_ROOT" ]]; then
-    :
-else
-    if command -v git >/dev/null 2>&1; then
-        REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
-    fi
-    if [[ -z "${REPO_ROOT:-}" || ! -d "$REPO_ROOT" ]]; then
-        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-    fi
-fi
+REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
 # Get target path for a given source file
 get_target_path() {
@@ -60,50 +50,17 @@ setup_dotfiles() {
         dotfiles_found=true
         local target
         target=$(get_target_path "$dotfile")
-        
+
         if [[ "$VERBOSE" == true ]]; then
             info "Processing dotfile: $dotfile -> $target"
         fi
-        
+
         # Ensure the target directory exists for non-standard locations
         if [[ "$target" != "$HOME/$(basename "$dotfile")" && "$DRY_RUN" != true ]]; then
             mkdir -p "$(dirname "$target")"
         fi
-        
-        if [[ "$DRY_RUN" == true ]]; then
-            if [[ -L "$target" ]]; then
-                info "DRY RUN: Would update symlink $target -> $dotfile"
-            elif [[ -f "$target" ]]; then
-                warn "DRY RUN: Would backup $target and create symlink to $dotfile"
-            else
-                info "DRY RUN: Would create symlink $target -> $dotfile"
-            fi
-            continue
-        fi
-        
-        # Check if target already exists
-        if [[ -L "$target" ]]; then
-            # Check if it's already pointing to the right place
-            if [[ "$(readlink "$target")" == "$dotfile" ]]; then
-                success "✓ Symlink already exists: $target"
-            else
-                info "Updating symlink: $target"
-                ln -sf "$dotfile" "$target"  # Atomic replacement
-                success "✓ Updated symlink: $target"
-            fi
-        elif [[ -f "$target" ]]; then
-            # Backup existing file
-            local backup
-            backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
-            info "Backing up existing file: $target -> $backup"
-            mv "$target" "$backup"
-            ln -sf "$dotfile" "$target"
-            success "✓ Created symlink: $target (backed up original to $backup)"
-        else
-            # Create new symlink
-            ln -sf "$dotfile" "$target"
-            success "✓ Created symlink: $target"
-        fi
+
+        create_symlink "$dotfile" "$target"
     done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" -o -path "*/oh-my-posh/*" \) -type f -print0 2>/dev/null || true)
     
     if [[ "$dotfiles_found" == false ]]; then

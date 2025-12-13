@@ -5,22 +5,13 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Resolve repository root robustly (env → git → relative)
-if [[ -n "${REPO_ROOT:-}" && -d "$REPO_ROOT" ]]; then
-    :
-else
-    if command -v git >/dev/null 2>&1; then
-        REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
-    fi
-    if [[ -z "${REPO_ROOT:-}" || ! -d "$REPO_ROOT" ]]; then
-        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-    fi
-fi
+REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
 # Check if 1Password is available
 check_1password_agent() {
-    local agent_socket="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
-    
+    # Expand ~ in SSH_AGENT_SOCKET from config
+    local agent_socket="${SSH_AGENT_SOCKET/#\~/$HOME}"
+
     if [[ -S "$agent_socket" ]]; then
         success "✓ 1Password SSH agent socket found"
         return 0
@@ -65,34 +56,14 @@ setup_ssh_config() {
     
     # Check 1Password agent availability
     check_1password_agent
-    
+
     # Create symlink for SSH config
-    if [[ -L "$ssh_config_target" ]]; then
-        # Check if it's already pointing to the right place
-        if [[ "$(readlink "$ssh_config_target")" == "$ssh_config_source" ]]; then
-            success "✓ SSH config symlink already exists: $ssh_config_target"
-        else
-            info "Updating SSH config symlink: $ssh_config_target"
-            rm "$ssh_config_target"
-            ln -sf "$ssh_config_source" "$ssh_config_target"
-            success "✓ Updated SSH config symlink: $ssh_config_target"
-        fi
-    elif [[ -f "$ssh_config_target" ]]; then
-        # Backup existing file
-        local backup
-        backup="$ssh_config_target.backup.$(date +%Y%m%d-%H%M%S)"
-        info "Backing up existing SSH config: $ssh_config_target -> $backup"
-        mv "$ssh_config_target" "$backup"
-        ln -sf "$ssh_config_source" "$ssh_config_target"
-        success "✓ Created SSH config symlink: $ssh_config_target (backed up original to $backup)"
-    else
-        # Create new symlink
-        ln -sf "$ssh_config_source" "$ssh_config_target"
-        success "✓ Created SSH config symlink: $ssh_config_target"
-    fi
-    
+    create_symlink "$ssh_config_source" "$ssh_config_target"
+
     # Set proper permissions on SSH config
-    chmod 600 "$ssh_config_target"
+    if [[ "$DRY_RUN" != true ]]; then
+        chmod 600 "$ssh_config_target"
+    fi
     success "SSH config symlink created successfully."
 }
 

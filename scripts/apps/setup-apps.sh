@@ -5,20 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Resolve repository root robustly:
-# 1) Use exported REPO_ROOT if present
-# 2) Use git to find the top-level if available
-# 3) Fallback to relative path from this script
-if [[ -n "${REPO_ROOT:-}" && -d "$REPO_ROOT" ]]; then
-    : # use existing REPO_ROOT
-else
-    if command -v git >/dev/null 2>&1; then
-        REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
-    fi
-    if [[ -z "${REPO_ROOT:-}" || ! -d "$REPO_ROOT" ]]; then
-        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-    fi
-fi
+REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
 # Install applications from Brewfile
 install_brewfile() {
@@ -140,7 +127,7 @@ setup_dock() {
 
     # Define application categories and their paths
     local smart_home_apps=("/Applications/Home Assistant.app")
-    local music_apps=("/System/Applications/Music.app" "/Applications/Spotify.app")
+    local music_apps=("/System/Applications/Music.app")
     local browser_apps=("/System/Cryptexes/App/System/Applications/Safari.app" "/Applications/Google Chrome.app" "/Applications/Zen.app")
     local communication_apps=("/System/Applications/Mail.app" "/Applications/Mimestream.app" "/Applications/Slack.app" "/System/Applications/Messages.app")
     local productivity_apps=("/Applications/ChatGPT.app" "/Applications/GCal for Google Calendar.app" "/System/Applications/Calendar.app")

@@ -122,7 +122,7 @@ cask "zen"
 cask "iina"
 
 # Music streaming
-cask "spotify"
+#cask "spotify"
 
 # =============================================================================
 # MAC APP STORE APPLICATIONS

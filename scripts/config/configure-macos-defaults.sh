@@ -5,9 +5,6 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
-# Configuration
-MACOS_DEFAULTS_ENABLED="${MACOS_DEFAULTS_ENABLED:-true}"
-
 # Function to set a default with error handling
 set_default() {
     local domain="$1"
@@ -82,20 +79,6 @@ configure_dock() {
     set_int "com.apple.dock" "largesize" "100" "Dock magnification size"
     set_bool "com.apple.dock" "magnification" "true" "Enable Dock magnification"
     set_bool "com.apple.dock" "show-recents" "false" "Hide recent applications in Dock"
-}
-
-# Function to configure Desktop settings
-configure_desktop() {
-    log_section "Configuring Desktop"
-    
-    set_bool "com.apple.WindowManager" "EnableTopTilingByEdgeDrag" "false" "Don't drag menus to menu bar to fill screen"
-}
-
-# Function to configure Sound settings
-configure_sound() {
-    log_section "Configuring Sound"
-    
-    set_bool "NSGlobalDomain" "com.apple.sound.beep.feedback" "true" "Enable sound feedback"
 }
 
 # Function to configure Finder settings

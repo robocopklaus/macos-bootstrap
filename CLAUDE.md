@@ -38,7 +38,7 @@ bash -n scripts/main.sh
 - `install.sh` - One-liner entry point for fresh macOS; installs Xcode CLI tools, clones repo, runs main.sh
 - `config.sh` - Central configuration with `export_config` function; all options have environment variable overrides
 - `scripts/main.sh` - Orchestrator that runs modules via `run_module()` based on config flags
-- `scripts/common.sh` - Shared utilities: logging (`info|warn|error|success`), `parse_args`, `ask_for_sudo`, `run()` for DRY_RUN-aware execution, `ensure_brew_in_path`
+- `scripts/common.sh` - Shared utilities: logging (`info|warn|error|success`), `parse_args`, `ask_for_sudo`, `run()` for DRY_RUN-aware execution, `ensure_brew_in_path`, `resolve_repo_root`, `create_symlink`
 - `scripts/core/` - System setup: macOS updates, Xcode CLI, Homebrew installation
 - `scripts/apps/` - Application installation and Dock configuration
 - `scripts/config/` - Dotfiles, SSH config, macOS defaults

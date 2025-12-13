@@ -18,13 +18,13 @@
 - Verbose logs: `./scripts/main.sh --verbose`
 - Module-only examples:
   - `./scripts/core/install-homebrew.sh`
-  - `./scripts/apps/setup-dock.sh`
+  - `./scripts/apps/setup-apps.sh`
 - Lint Bash (if installed): `shellcheck scripts/**/*.sh`
 - Syntax check: `bash -n scripts/main.sh`
 
 ## Coding Style & Naming Conventions
 - Bash only; start scripts with `#!/usr/bin/env bash` and `set -euo pipefail`.
-- Use `common.sh` helpers: `info|warn|error|success`, `parse_args`, `ask_for_sudo`, `check_platform`.
+- Use `common.sh` helpers: `info|warn|error|success`, `parse_args`, `ask_for_sudo`, `check_platform`, `run`, `ensure_brew_in_path`, `resolve_repo_root`, `create_symlink`.
 - File naming: verbs + scope, e.g., `install-*.sh`, `configure-*.sh`, `update-*.sh`.
 - Functions: lower_snake_case; constants `UPPER_SNAKE_CASE` with `readonly`.
 - Idempotent modules: safe to re-run; honor `DRY_RUN` and `VERBOSE`.

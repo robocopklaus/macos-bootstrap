@@ -17,7 +17,10 @@ SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_NAME
 # Respect pre-set LOG_FILE/TEMP_DIR to enable single-run logging across modules
 LOG_FILE="${LOG_FILE:-/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log}"
-TEMP_DIR="${TEMP_DIR:-/tmp/macos-bootstrap-$$}"
+# Use mktemp for secure temp directory creation
+if [[ -z "${TEMP_DIR:-}" ]]; then
+    TEMP_DIR="$(mktemp -d -t macos-bootstrap.XXXXXX)"
+fi
 export LOG_FILE TEMP_DIR
 
 # Colors for output
@@ -79,11 +82,11 @@ ensure_brew_in_path() {
         fi
     fi
 
-    # Fallback: prepend common brew bin directories
-    if [[ -d "/opt/homebrew/bin" ]]; then
+    # Fallback: prepend common brew bin directories (only if not already in PATH)
+    if [[ -d "/opt/homebrew/bin" ]] && [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
         export PATH="/opt/homebrew/bin:$PATH"
     fi
-    if [[ -d "/usr/local/bin" ]]; then
+    if [[ -d "/usr/local/bin" ]] && [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
         export PATH="/usr/local/bin:$PATH"
     fi
 

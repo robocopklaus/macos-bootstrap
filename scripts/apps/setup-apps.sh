@@ -58,6 +58,14 @@ app_exists() {
     [[ -d "$app_path" ]]
 }
 
+# Check if app is already in the Dock
+dock_item_exists() {
+    local app_path="$1"
+    local app_name
+    app_name="$(basename "$app_path" .app)"
+    dockutil --find "$app_name" >/dev/null 2>&1
+}
+
 # Setup Dock items
 setup_dock() {
     info "Setting up Dock items..."
@@ -73,7 +81,7 @@ setup_dock() {
         return 0
     fi
 
-    # Function to add applications to the Dock
+    # Function to add applications to the Dock (idempotent - skips existing items)
     add_apps_to_dock() {
         local category="$1"
         shift
@@ -83,7 +91,11 @@ setup_dock() {
         info "Adding $category applications to Dock..."
         for app in "${apps[@]}"; do
             if app_exists "$app"; then
-                if dockutil --no-restart --add "$app" >/dev/null 2>&1; then
+                if dock_item_exists "$app"; then
+                    if [[ "$VERBOSE" == true ]]; then
+                        info "Skipping $app (already in Dock)"
+                    fi
+                elif dockutil --no-restart --add "$app" >/dev/null 2>&1; then
                     success "✓ Added $app to Dock"
                     ((added_count++))
                 else
@@ -102,23 +114,28 @@ setup_dock() {
         fi
     }
 
-    info "Clearing existing Dock items..."
-    # Backup Dock plist before modification
-    local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
-    if [[ -f "$dock_plist" ]]; then
-        local backup
-        backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
-        if cp "$dock_plist" "$backup"; then
-            success "✓ Backed up Dock plist to $backup"
-        else
-            warn "Failed to back up Dock plist"
+    # Optionally reset Dock before setup (controlled by DOCK_RESET_BEFORE_SETUP env var)
+    if [[ "${DOCK_RESET_BEFORE_SETUP:-false}" == "true" ]]; then
+        info "Clearing existing Dock items..."
+        # Backup Dock plist before modification
+        local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
+        if [[ -f "$dock_plist" ]]; then
+            local backup
+            backup="$HOME/Library/Preferences/com.apple.dock.plist.backup.$(date +%Y%m%d-%H%M%S)"
+            if cp "$dock_plist" "$backup"; then
+                success "✓ Backed up Dock plist to $backup"
+            else
+                warn "Failed to back up Dock plist"
+            fi
         fi
-    fi
 
-    if dockutil --no-restart --remove all >/dev/null 2>&1; then
-        success "✓ Cleared existing Dock items"
+        if dockutil --no-restart --remove all >/dev/null 2>&1; then
+            success "✓ Cleared existing Dock items"
+        else
+            warn "Failed to clear existing Dock items"
+        fi
     else
-        warn "Failed to clear existing Dock items"
+        info "Merging apps into existing Dock (set DOCK_RESET_BEFORE_SETUP=true to reset)"
     fi
 
     # Define application categories and their paths

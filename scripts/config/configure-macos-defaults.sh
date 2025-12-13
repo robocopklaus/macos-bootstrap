@@ -22,7 +22,7 @@ set_default() {
         info "Setting $domain $key = $value ($data_type)"
     fi
     
-    if [[ "$DRY_RUN" == "true" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
         info "[DRY RUN] Would set: defaults write $domain $key -$data_type $value"
         return 0
     fi
@@ -115,7 +115,7 @@ configure_finder() {
 
     # Update Finder plist if present
     local finder_plist="$HOME/Library/Preferences/com.apple.finder.plist"
-    if [[ "$DRY_RUN" == "true" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
         info "[DRY RUN] Would update Finder plist: show item info and arrange by name"
     else
         if [[ -f "$finder_plist" ]]; then
@@ -125,18 +125,6 @@ configure_finder() {
             warn "Finder plist not found at $finder_plist; skipping PlistBuddy edits"
         fi
     fi
-}
-
-# Function to configure system preferences
-configure_system_preferences() {
-    log_section "Configuring System Preferences"
-    
-}
-
-# Function to configure security settings
-configure_security() {
-    log_section "Configuring Security Settings"
-    
 }
 
 # Function to configure trackpad settings
@@ -163,29 +151,11 @@ configure_keyboard() {
     set_int "NSGlobalDomain" "InitialKeyRepeat" "15" "Set initial key repeat delay"
 }
 
-# Function to configure Safari settings
-configure_safari() {
-    log_section "Configuring Safari"
-    
-}
-
-# Function to configure Terminal settings
-configure_terminal() {
-    log_section "Configuring Terminal"
-    
-}
-
-# Function to configure other applications
-configure_other_apps() {
-    log_section "Configuring Other Applications"
-    
-}
-
 # Function to restart affected applications
 restart_applications() {
     log_section "Restarting Affected Applications"
     
-    if [[ "$DRY_RUN" == "true" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
         info "[DRY RUN] Would restart: Dock, Finder, SystemUIServer"
         return 0
     fi
@@ -225,15 +195,10 @@ main() {
     
     configure_dock
     configure_finder
-    configure_system_preferences
-    configure_security
     configure_trackpad
     configure_keyboard
-    configure_safari
-    configure_terminal
-    configure_other_apps
-    
-    if [[ "$DRY_RUN" != "true" ]]; then
+
+    if [[ "$DRY_RUN" != true ]]; then
         restart_applications
     fi
     

@@ -34,23 +34,28 @@ install_homebrew() {
             eval "$(/usr/local/bin/brew shellenv)"
         fi
         
-        # Persist Homebrew to shell profiles if possible
-        local shellenv_cmd
-        if command -v brew >/dev/null 2>&1; then
-            shellenv_cmd="$(brew shellenv)"
-            # zsh default
-            if [[ -n "${HOME:-}" ]]; then
-                for profile in "$HOME/.zprofile" "$HOME/.zshrc" "$HOME/.profile"; do
-                    if [[ -f "$profile" ]] && grep -q "brew shellenv" "$profile"; then
-                        continue
-                    fi
-                    if [[ "$DRY_RUN" == true ]]; then
-                        info "DRY RUN: Would append Homebrew shellenv to $profile"
-                    else
-                        printf '\n# Homebrew\n%s\n' "$shellenv_cmd" >> "$profile"
-                        success "Added Homebrew shellenv to $profile"
-                    fi
-                done
+        # Persist Homebrew to .zprofile only (zsh login shell, standard location)
+        if command -v brew >/dev/null 2>&1 && [[ -n "${HOME:-}" ]]; then
+            local profile="$HOME/.zprofile"
+            local shellenv_cmd
+
+            # Determine the correct shellenv command based on architecture
+            if [[ -f "/opt/homebrew/bin/brew" ]]; then
+                shellenv_cmd='eval "$(/opt/homebrew/bin/brew shellenv)"'
+            else
+                shellenv_cmd='eval "$(/usr/local/bin/brew shellenv)"'
+            fi
+
+            # Check if already present (robust check)
+            if grep -qF "brew shellenv" "$profile" 2>/dev/null; then
+                info "Homebrew shellenv already configured in $profile"
+            elif [[ "$DRY_RUN" == true ]]; then
+                info "DRY RUN: Would append Homebrew shellenv to $profile"
+            else
+                # Create file if it doesn't exist
+                [[ ! -f "$profile" ]] && touch "$profile"
+                printf '\n# Homebrew\n%s\n' "$shellenv_cmd" >> "$profile"
+                success "Added Homebrew shellenv to $profile"
             fi
         fi
 

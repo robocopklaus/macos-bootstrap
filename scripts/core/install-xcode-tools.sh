@@ -51,18 +51,30 @@ install_xcode_cli_tools() {
     # Create temporary file to trigger installation
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     
-    # Get the product identifier
+    # Get the product identifier (try multiple extraction methods for robustness)
     local product_id
+
+    # Method 1: Extract using Label: format (newer macOS versions)
     product_id=$(softwareupdate -l 2>/dev/null | \
-        grep "\*.*Command Line Tools" | \
+        grep -E "^\s*\*.*Command Line Tools" | \
         tail -n 1 | \
-        sed 's/^[^C]* //' | \
-        sed 's/ .*//' | \
-        tr -d '[:space:]')
-    
-    if [[ -z "$product_id" ]] || [[ "$product_id" == "Command" ]]; then
+        awk -F'Label: ' '{print $2}' | \
+        xargs 2>/dev/null)
+
+    # Method 2: Fallback extraction for older format
+    if [[ -z "$product_id" ]] || [[ ! "$product_id" =~ ^Command ]]; then
+        product_id=$(softwareupdate -l 2>/dev/null | \
+            grep -i "Command Line Tools" | \
+            grep -v "^\s*$" | \
+            tail -n 1 | \
+            sed -E 's/^.*\* (Command Line Tools[^,]*).*/\1/' | \
+            xargs 2>/dev/null)
+    fi
+
+    # Validate the extracted ID
+    if [[ -z "$product_id" ]] || [[ ! "$product_id" =~ ^Command ]]; then
         error "Could not find Command Line Tools product identifier"
-        error "Command Line Tools may already be installed or not available"
+        error "Try running: xcode-select --install"
         rm -f /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
         return 1
     fi

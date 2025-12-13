@@ -31,11 +31,17 @@ brew "dockutil"
 # Oh My Posh - https://ohmyposh.dev/docs/installation/macos
 brew "oh-my-posh"
 
-# OpenAI Codex
+# OpenAI Codex - AI coding assistant CLI
 brew "codex"
 
-# opencode
+# Opencode - Open source AI code assistant
 brew "opencode"
+
+# GitHub CLI for repository management
+brew "gh"
+
+# JSON processor for command-line
+brew "jq"
 
 # API development and testing platform
 cask "postman"
@@ -69,9 +75,6 @@ cask "clockify"
 # Email client
 cask "mimestream"
 
-# Smart home automation
-cask "home-assistant"
-
 # Terminal emulator
 cask "ghostty"
 
@@ -80,6 +83,13 @@ cask "docker-desktop"
 
 # Google Drive
 cask "google-drive"
+
+# =============================================================================
+# SMART HOME
+# =============================================================================
+
+# Smart home automation
+cask "home-assistant"
 
 # =============================================================================
 # COMMUNICATION

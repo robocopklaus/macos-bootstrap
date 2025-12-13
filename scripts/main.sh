@@ -71,10 +71,10 @@ main() {
     
     # Core system setup
     run_module "macOS Updates" "$SCRIPT_DIR/core/update-macos.sh" "INSTALL_MACOS_UPDATES"
-    run_module "Xcode CLI Tools" "$SCRIPT_DIR/core/install-xcode-tools.sh" "INSTALL_XCODE_TOOLS"
-    
-    # Install tools and applications
-    run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW"
+    run_module "Xcode CLI Tools" "$SCRIPT_DIR/core/install-xcode-tools.sh" "INSTALL_XCODE_TOOLS" || exit 1
+
+    # Install tools and applications (Homebrew is critical - apps depend on it)
+    run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW" || exit 1
     run_module "Applications & Dock" "$SCRIPT_DIR/apps/setup-apps.sh" "INSTALL_APPLICATIONS"
 
     # Configuration

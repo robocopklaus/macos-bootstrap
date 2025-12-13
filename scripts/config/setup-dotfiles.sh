@@ -88,8 +88,7 @@ setup_dotfiles() {
                 success "✓ Symlink already exists: $target"
             else
                 info "Updating symlink: $target"
-                rm "$target"
-                ln -s "$dotfile" "$target"
+                ln -sf "$dotfile" "$target"  # Atomic replacement
                 success "✓ Updated symlink: $target"
             fi
         elif [[ -f "$target" ]]; then
@@ -98,11 +97,11 @@ setup_dotfiles() {
             backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
             info "Backing up existing file: $target -> $backup"
             mv "$target" "$backup"
-            ln -s "$dotfile" "$target"
+            ln -sf "$dotfile" "$target"
             success "✓ Created symlink: $target (backed up original to $backup)"
         else
             # Create new symlink
-            ln -s "$dotfile" "$target"
+            ln -sf "$dotfile" "$target"
             success "✓ Created symlink: $target"
         fi
     done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" -o -path "*/oh-my-posh/*" \) -type f -print0 2>/dev/null || true)

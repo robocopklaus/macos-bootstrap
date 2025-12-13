@@ -32,7 +32,7 @@ brew "dockutil"
 brew "oh-my-posh"
 
 # OpenAI Codex - AI coding assistant CLI
-brew "codex"
+cask "codex"
 
 # Opencode - Open source AI code assistant
 brew "opencode"

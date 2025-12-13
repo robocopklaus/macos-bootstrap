@@ -206,7 +206,7 @@ resolve_repo_root() {
     fi
 
     # Fallback to relative path from script directory
-    echo "$(cd "$script_dir/../.." && pwd)"
+    (cd "$script_dir/../.." && pwd)
 }
 
 # Create symlink with backup support (idempotent)

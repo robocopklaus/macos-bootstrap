@@ -40,6 +40,7 @@ install_homebrew() {
             local shellenv_cmd
 
             # Determine the correct shellenv command based on architecture
+            # shellcheck disable=SC2016  # Single quotes intentional - literal string for .zprofile
             if [[ -f "/opt/homebrew/bin/brew" ]]; then
                 shellenv_cmd='eval "$(/opt/homebrew/bin/brew shellenv)"'
             else

@@ -57,24 +57,27 @@ check_platform() {
     info "Platform check passed: macOS detected"
 }
 
-# Safely request sudo privileges
+# Safely request sudo privileges and keep them alive
 ask_for_sudo() {
     info "Requesting sudo privileges..."
-    
+
     # Check if we already have sudo privileges
     if sudo -n true 2>/dev/null; then
         info "Already have sudo privileges"
-        return 0
-    fi
-    
-    # Request sudo
-    sudo -v
-    if sudo -n true 2>/dev/null; then
-        success "Sudo privileges obtained"
     else
-        error "Failed to obtain sudo privileges"
-        exit 1
+        # Request sudo
+        sudo -v
+        if sudo -n true 2>/dev/null; then
+            success "Sudo privileges obtained"
+        else
+            error "Failed to obtain sudo privileges"
+            exit 1
+        fi
     fi
+
+    # Keep sudo alive in background until script exits
+    # Refreshes every 50 seconds (sudo timeout is 5 minutes by default)
+    (while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done) &
 }
 
 # Install Xcode Command Line Tools (includes Git)

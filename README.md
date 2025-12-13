@@ -1,6 +1,8 @@
 # macos-bootstrap
 
-A comprehensive script to bootstrap a fresh macOS installation with essential development tools, applications, and custom settings.
+My personal macOS setup scripts for bootstrapping a fresh installation with my preferred development tools, applications, and system configuration.
+
+> **Note**: This is my personal configuration. Feel free to fork and customize for your own use.
 
 ## Features
 
@@ -13,9 +15,9 @@ A comprehensive script to bootstrap a fresh macOS installation with essential de
 ## Project Structure
 
 ```
-├── install.sh                   # One-liner installer
-├── config.sh                    # Configuration
-├── Brewfile                     # Applications
+├── install.sh                  # One-liner installer
+├── config.sh                   # Configuration
+├── Brewfile                    # Applications
 ├── files/ssh/config            # SSH template
 └── scripts/
     ├── main.sh                 # Orchestrator

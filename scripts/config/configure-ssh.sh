@@ -54,8 +54,8 @@ setup_ssh_config() {
         return 0
     fi
     
-    # Check 1Password agent availability
-    check_1password_agent
+    # Check 1Password agent availability (informational only, don't fail if missing)
+    check_1password_agent || true
 
     # Create symlink for SSH config
     create_symlink "$ssh_config_source" "$ssh_config_target"

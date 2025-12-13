@@ -101,8 +101,8 @@ setup_dock() {
         fi
     }
 
-    # Optionally reset Dock before setup (controlled by DOCK_RESET_BEFORE_SETUP env var)
-    if [[ "${DOCK_RESET_BEFORE_SETUP:-false}" == "true" ]]; then
+    # Reset Dock before setup by default (controlled by DOCK_RESET_BEFORE_SETUP env var)
+    if [[ "${DOCK_RESET_BEFORE_SETUP:-true}" == "true" ]]; then
         info "Clearing existing Dock items..."
         # Backup Dock plist before modification
         local dock_plist="$HOME/Library/Preferences/com.apple.dock.plist"
@@ -122,7 +122,7 @@ setup_dock() {
             warn "Failed to clear existing Dock items"
         fi
     else
-        info "Merging apps into existing Dock (set DOCK_RESET_BEFORE_SETUP=true to reset)"
+        info "Merging apps into existing Dock (set DOCK_RESET_BEFORE_SETUP=false to keep this behavior)"
     fi
 
     # Define application categories and their paths

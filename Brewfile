@@ -90,6 +90,9 @@ cask "google-drive"
 # Raycast - Launcher for macOS
 cask "raycast"
 
+# Obsidian - Markdown note-taking app
+cask "obsidian"
+
 # =============================================================================
 # SMART HOME
 # =============================================================================

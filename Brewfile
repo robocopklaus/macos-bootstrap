@@ -84,6 +84,9 @@ cask "docker-desktop"
 # Google Drive
 cask "google-drive"
 
+# Raycast - Launcher for macOS
+cask "raycast"
+
 # =============================================================================
 # SMART HOME
 # =============================================================================

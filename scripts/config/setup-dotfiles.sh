@@ -11,7 +11,7 @@ REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 setup_dotfiles() {
     info "Setting up dotfiles with GNU Stow..."
 
-    local stow_dir="$REPO_ROOT/files"
+    local stow_dir="$REPO_ROOT"
 
     if [[ ! -d "$stow_dir/dotfiles" ]]; then
         warn "Dotfiles package not found at: $stow_dir/dotfiles"

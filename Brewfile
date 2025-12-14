@@ -28,6 +28,9 @@ brew "antidote"
 # Dock customization utility
 brew "dockutil"
 
+# Symlink farm manager for dotfiles
+brew "stow"
+
 # Oh My Posh - https://ohmyposh.dev/docs/installation/macos
 brew "oh-my-posh"
 

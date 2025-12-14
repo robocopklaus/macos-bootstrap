@@ -1,71 +1,56 @@
 #!/usr/bin/env bash
 
-# Dotfiles Setup
+# Dotfiles Setup using GNU Stow
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
-# Get target path for a given source file
-get_target_path() {
-    local source_file="$1"
-    local filename
-    filename=$(basename "$source_file")
-    local default_target="$HOME/$filename"
-    
-    # App-specific configuration mappings
-    case "$source_file" in
-        */ghostty/config)
-            echo "$HOME/.config/ghostty/config"
-            ;;
-        */oh-my-posh/theme.omp.json)
-            echo "$HOME/.config/oh-my-posh/theme.omp.json"
-            ;;
-        *)
-            # Default: place in home directory
-            echo "$default_target"
-            ;;
-    esac
-}
-
-# Create symlinks for dotfiles
+# Create symlinks for dotfiles using GNU Stow
 setup_dotfiles() {
-    info "Setting up dotfiles..."
-    
-    local files_dir="$REPO_ROOT/files"
-    
-    if [[ ! -d "$files_dir" ]]; then
-        warn "Files directory not found at: $files_dir"
+    info "Setting up dotfiles with GNU Stow..."
+
+    local stow_dir="$REPO_ROOT/files"
+
+    if [[ ! -d "$stow_dir/dotfiles" ]]; then
+        warn "Dotfiles package not found at: $stow_dir/dotfiles"
         return 0
     fi
-    
-    info "Searching for dotfiles in: $files_dir"
-    
-    # Find and process all dotfiles in the files directory and subdirectories
-    # Use a more robust approach to handle the find command
-    local dotfiles_found=false
-    
-    while IFS= read -r -d '' dotfile; do
-        dotfiles_found=true
-        local target
-        target=$(get_target_path "$dotfile")
 
-        if [[ "$VERBOSE" == true ]]; then
-            info "Processing dotfile: $dotfile -> $target"
-        fi
+    # Check if stow is available
+    if ! command -v stow &>/dev/null; then
+        error "GNU Stow is not installed. Please install it with: brew install stow"
+        return 1
+    fi
 
-        # Ensure the target directory exists for non-standard locations
-        if [[ "$target" != "$HOME/$(basename "$dotfile")" && "$DRY_RUN" != true ]]; then
-            mkdir -p "$(dirname "$target")"
-        fi
+    local stow_opts=(--dir="$stow_dir" --target="$HOME")
 
-        create_symlink "$dotfile" "$target"
-    done < <(find "$files_dir" \( -name ".*" -o -path "*/ghostty/*" -o -path "*/oh-my-posh/*" \) -type f -print0 2>/dev/null || true)
-    
-    if [[ "$dotfiles_found" == false ]]; then
-        info "No dotfiles found in $files_dir"
-        info "You can add dotfiles to the files/ directory to have them automatically linked"
+    if [[ "$VERBOSE" == true ]]; then
+        stow_opts+=(--verbose=2)
+    else
+        stow_opts+=(--verbose=1)
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        stow_opts+=(--no)
+        info "DRY RUN: Would stow dotfiles to $HOME"
+    fi
+
+    # Use --adopt to take ownership of existing files/symlinks (safe for migrations)
+    # Use --restow to handle re-runs gracefully (removes then re-stows)
+    if stow "${stow_opts[@]}" --adopt --restow dotfiles; then
+        success "Dotfiles stowed successfully"
+    else
+        error "Failed to stow dotfiles"
+        return 1
+    fi
+
+    # Fix SSH permissions (stow doesn't handle this)
+    if [[ "$DRY_RUN" != true && -d "$HOME/.ssh" ]]; then
+        chmod 700 "$HOME/.ssh" 2>/dev/null || true
+        chmod 600 "$HOME/.ssh/config" 2>/dev/null || true
+        success "SSH permissions set (700 for .ssh, 600 for config)"
     fi
 }
 
@@ -78,4 +63,4 @@ main() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     init_script
     main
-fi 
+fi

@@ -209,44 +209,6 @@ resolve_repo_root() {
     (cd "$script_dir/../.." && pwd)
 }
 
-# Create symlink with backup support (idempotent)
-# Usage: create_symlink "/source/file" "/target/link"
-create_symlink() {
-    local source="$1"
-    local target="$2"
-
-    if [[ "$DRY_RUN" == true ]]; then
-        if [[ -L "$target" ]]; then
-            info "DRY RUN: Would update symlink $target -> $source"
-        elif [[ -f "$target" ]]; then
-            warn "DRY RUN: Would backup $target and create symlink to $source"
-        else
-            info "DRY RUN: Would create symlink $target -> $source"
-        fi
-        return 0
-    fi
-
-    if [[ -L "$target" ]]; then
-        if [[ "$(readlink "$target")" == "$source" ]]; then
-            success "✓ Symlink already exists: $target"
-        else
-            info "Updating symlink: $target"
-            ln -sf "$source" "$target"
-            success "✓ Updated symlink: $target"
-        fi
-    elif [[ -f "$target" ]]; then
-        local backup
-        backup="$target.backup.$(date +%Y%m%d-%H%M%S)"
-        info "Backing up existing file: $target -> $backup"
-        mv "$target" "$backup"
-        ln -sf "$source" "$target"
-        success "✓ Created symlink: $target (backed up original to $backup)"
-    else
-        ln -sf "$source" "$target"
-        success "✓ Created symlink: $target"
-    fi
-}
-
 # Display usage information
 show_usage() {
     cat << EOF

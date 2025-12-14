@@ -11,6 +11,12 @@ REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 setup_dotfiles() {
     info "Setting up dotfiles with GNU Stow..."
 
+    # Ensure brew (and brew-installed tools like stow) are in PATH
+    if ! ensure_brew_in_path; then
+        error "brew not found. Ensure Homebrew is installed and available in PATH"
+        return 1
+    fi
+
     local stow_dir="$REPO_ROOT"
 
     if [[ ! -d "$stow_dir/dotfiles" ]]; then

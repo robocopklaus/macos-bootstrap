@@ -45,7 +45,8 @@ setup_dotfiles() {
 
     # Use --adopt to take ownership of existing files/symlinks (safe for migrations)
     # Use --restow to handle re-runs gracefully (removes then re-stows)
-    if stow "${stow_opts[@]}" --adopt --restow dotfiles; then
+    # Use --no-folding to create individual file symlinks (enables .stow-local-ignore patterns)
+    if stow "${stow_opts[@]}" --adopt --restow --no-folding dotfiles; then
         success "Dotfiles stowed successfully"
     else
         error "Failed to stow dotfiles"

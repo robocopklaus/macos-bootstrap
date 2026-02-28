@@ -7,6 +7,41 @@ source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
+# Back up any real files in $HOME that would conflict with dotfile symlinks.
+# Conflicts are moved to ~/.dotfiles-backup-<timestamp>/ so they are not lost.
+# Already-stowed symlinks are not touched, making this safe to re-run.
+backup_conflicts() {
+    local dotfiles_dir="$REPO_ROOT/dotfiles"
+    local timestamp
+    timestamp=$(date +%Y%m%d-%H%M%S)
+    local backup_dir="$HOME/.dotfiles-backup-$timestamp"
+    local backed_up=false
+
+    while IFS= read -r -d '' src_file; do
+        local rel_path="${src_file#$dotfiles_dir/}"
+        local target="$HOME/$rel_path"
+
+        # Conflict: target exists as a real file (not a symlink, not a directory)
+        if [[ -f "$target" && ! -L "$target" ]]; then
+            if [[ "$backed_up" == false ]]; then
+                info "Backing up conflicting dotfiles to $backup_dir"
+                backed_up=true
+            fi
+            if [[ "$DRY_RUN" == true ]]; then
+                info "  DRY RUN: Would back up ~/$rel_path"
+            else
+                mkdir -p "$(dirname "$backup_dir/$rel_path")"
+                mv "$target" "$backup_dir/$rel_path"
+                info "  Backed up ~/$rel_path"
+            fi
+        fi
+    done < <(find "$dotfiles_dir" -type f -print0)
+
+    if [[ "$backed_up" == true && "$DRY_RUN" != true ]]; then
+        success "Conflicting files backed up to $backup_dir"
+    fi
+}
+
 # Create symlinks for dotfiles using GNU Stow
 setup_dotfiles() {
     info "Setting up dotfiles with GNU Stow..."
@@ -30,6 +65,10 @@ setup_dotfiles() {
         return 1
     fi
 
+    # Back up any conflicting real files before stowing so repo dotfiles are
+    # never silently overwritten
+    backup_conflicts
+
     local stow_opts=(--dir="$stow_dir" --target="$HOME")
 
     if [[ "$VERBOSE" == true ]]; then
@@ -43,10 +82,9 @@ setup_dotfiles() {
         info "DRY RUN: Would stow dotfiles to $HOME"
     fi
 
-    # Use --adopt to take ownership of existing files/symlinks (safe for migrations)
     # Use --restow to handle re-runs gracefully (removes then re-stows)
     # Use --no-folding to create individual file symlinks (enables .stow-local-ignore patterns)
-    if stow "${stow_opts[@]}" --adopt --restow --no-folding dotfiles; then
+    if stow "${stow_opts[@]}" --restow --no-folding dotfiles; then
         success "Dotfiles stowed successfully"
     else
         error "Failed to stow dotfiles"

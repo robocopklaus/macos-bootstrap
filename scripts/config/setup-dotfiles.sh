@@ -7,39 +7,99 @@ source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
 
-# Back up any real files in $HOME that would conflict with dotfile symlinks.
-# Conflicts are moved to ~/.dotfiles-backup-<timestamp>/ so they are not lost.
-# Already-stowed symlinks are not touched, making this safe to re-run.
-backup_conflicts() {
+# Conflict classification results
+CONFLICT_BACKUPS=()
+CONFLICT_BLOCKERS=()
+SKIP_STOW_DRY_RUN=false
+
+# Collect target conflicts for dotfiles package.
+# - Existing regular files/directories are backup candidates.
+# - Symlinks that do not point to this package are blocking conflicts.
+collect_conflicts() {
     local dotfiles_dir="$REPO_ROOT/dotfiles"
-    local timestamp
-    timestamp=$(date +%Y%m%d-%H%M%S)
-    local backup_dir="$HOME/.dotfiles-backup-$timestamp"
-    local backed_up=false
+    CONFLICT_BACKUPS=()
+    CONFLICT_BLOCKERS=()
 
     while IFS= read -r -d '' src_file; do
         local rel_path="${src_file#"$dotfiles_dir"/}"
         local target="$HOME/$rel_path"
 
-        # Conflict: target exists as a real file (not a symlink, not a directory)
-        if [[ -f "$target" && ! -L "$target" ]]; then
-            if [[ "$backed_up" == false ]]; then
-                info "Backing up conflicting dotfiles to $backup_dir"
-                backed_up=true
+        if [[ -L "$target" ]]; then
+            local link_target
+            link_target="$(readlink "$target" 2>/dev/null || true)"
+
+            # Treat links to this package as managed/stowed; everything else blocks.
+            if [[ "$link_target" == *"dotfiles/$rel_path" ]]; then
+                continue
             fi
-            if [[ "$DRY_RUN" == true ]]; then
-                info "  DRY RUN: Would back up ~/$rel_path"
-            else
-                mkdir -p "$(dirname "$backup_dir/$rel_path")"
-                mv "$target" "$backup_dir/$rel_path"
-                info "  Backed up ~/$rel_path"
-            fi
+
+            CONFLICT_BLOCKERS+=("$rel_path")
+            continue
+        fi
+
+        if [[ -e "$target" ]]; then
+            CONFLICT_BACKUPS+=("$rel_path")
         fi
     done < <(find "$dotfiles_dir" -type f -print0)
+}
 
-    if [[ "$backed_up" == true && "$DRY_RUN" != true ]]; then
-        success "Conflicting files backed up to $backup_dir"
+# Back up existing conflict paths in $HOME before stowing, without partial changes.
+backup_conflicts() {
+    collect_conflicts
+
+    if (( ${#CONFLICT_BLOCKERS[@]} > 0 )); then
+        error "Found conflicting symlinks not owned by stow:"
+        local blocker
+        for blocker in "${CONFLICT_BLOCKERS[@]}"; do
+            error "  ~/$blocker"
+        done
+        error "Resolve these symlink conflicts first, then re-run setup-dotfiles."
+        return 1
     fi
+
+    if (( ${#CONFLICT_BACKUPS[@]} == 0 )); then
+        return 0
+    fi
+
+    local rel_path
+    if [[ "$DRY_RUN" == true ]]; then
+        local timestamp
+        timestamp=$(date +%Y%m%d-%H%M%S)
+        local backup_dir="$HOME/.dotfiles-backup-$timestamp"
+        info "Backing up conflicting dotfiles to $backup_dir"
+        for rel_path in "${CONFLICT_BACKUPS[@]}"; do
+            info "  DRY RUN: Would back up ~/$rel_path"
+        done
+        # stow --no still conflicts while files exist; skip and report simulation.
+        SKIP_STOW_DRY_RUN=true
+        return 0
+    fi
+
+    local timestamp
+    timestamp=$(date +%Y%m%d-%H%M%S)
+    local backup_dir="$HOME/.dotfiles-backup-$timestamp"
+    local moved_paths=()
+
+    info "Backing up conflicting dotfiles to $backup_dir"
+    for rel_path in "${CONFLICT_BACKUPS[@]}"; do
+        mkdir -p "$(dirname "$backup_dir/$rel_path")"
+        if mv "$HOME/$rel_path" "$backup_dir/$rel_path"; then
+            moved_paths+=("$rel_path")
+            info "  Backed up ~/$rel_path"
+        else
+            error "Failed to back up ~/$rel_path"
+            warn "Attempting rollback of previously moved files..."
+            local moved
+            for moved in "${moved_paths[@]}"; do
+                mkdir -p "$(dirname "$HOME/$moved")"
+                mv "$backup_dir/$moved" "$HOME/$moved" 2>/dev/null || \
+                    warn "Could not restore ~/$moved from backup"
+            done
+            return 1
+        fi
+    done
+
+    success "Conflicting files backed up to $backup_dir"
 }
 
 # Create symlinks for dotfiles using GNU Stow
@@ -68,6 +128,11 @@ setup_dotfiles() {
     # Back up any conflicting real files before stowing so repo dotfiles are
     # never silently overwritten
     backup_conflicts
+
+    if [[ "$DRY_RUN" == true && "$SKIP_STOW_DRY_RUN" == true ]]; then
+        warn "DRY RUN: Skipping stow simulation because conflicts would be moved first"
+        return 0
+    fi
 
     local stow_opts=(--dir="$stow_dir" --target="$HOME")
 

@@ -7,28 +7,21 @@ source "$SCRIPT_DIR/../common.sh"
 
 # Check if Xcode CLI tools are installed
 check_xcode_cli_tools() {
-    local git_path="/Library/Developer/CommandLineTools/usr/bin/git"
-    
-    # Check if git exists in the expected location
-    if [[ -e "$git_path" ]]; then
-        # Verify xcode-select points to the right location
-        local xcode_path
-        xcode_path=$(xcode-select -p 2>/dev/null)
-        if [[ "$xcode_path" == "/Library/Developer/CommandLineTools" ]]; then
-            return 0
-        fi
+    local clt_path="/Library/Developer/CommandLineTools"
+    local clt_git="$clt_path/usr/bin/git"
+    local xcode_path
+    xcode_path="$(xcode-select -p 2>/dev/null || true)"
+
+    # Primary check: xcode-select points to CLT and key binary exists.
+    if [[ "$xcode_path" == "$clt_path" ]] && [[ -x "$clt_git" ]]; then
+        return 0
     fi
-    
-    # Alternative check: try to run git directly
-    if command -v git >/dev/null 2>&1; then
-        # Check if git is from Command Line Tools
-        local git_location
-        git_location=$(which git 2>/dev/null)
-        if [[ "$git_location" == "/usr/bin/git" ]] || [[ "$git_location" == "/Library/Developer/CommandLineTools/usr/bin/git" ]]; then
-            return 0
-        fi
+
+    # Fallback check: CLT package is registered and key binary exists.
+    if pkgutil --pkg-info com.apple.pkg.CLTools_Executables >/dev/null 2>&1 && [[ -x "$clt_git" ]]; then
+        return 0
     fi
-    
+
     return 1
 }
 

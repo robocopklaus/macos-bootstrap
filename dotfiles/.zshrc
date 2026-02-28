@@ -9,14 +9,20 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # Homebrew environment setup
-eval "$(/opt/homebrew/bin/brew shellenv)"
+if [[ -x "/opt/homebrew/bin/brew" ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x "/usr/local/bin/brew" ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 # --------------------------------
 # Zsh Customization
 # --------------------------------
 
 # Oh My Posh: A prompt engine for any shell
-eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/theme.omp.json)"
+if command -v oh-my-posh &> /dev/null; then
+  eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/theme.omp.json)"
+fi
 
 # Antidote: A plugin manager for Zsh
 # Loads Antidote and its plugins

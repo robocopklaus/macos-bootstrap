@@ -33,12 +33,7 @@ run_module() {
     fi
     
     info "Running module: $module_name"
-    
-    if [[ "$DRY_RUN" == true ]]; then
-        warn "DRY RUN: Would run $module_script"
-        return 0
-    fi
-    
+
     if [[ -f "$module_script" ]]; then
         if bash "$module_script"; then
             success "✓ Module completed: $module_name"
@@ -89,5 +84,6 @@ main() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     init_script
     parse_args "$@"
+    export DRY_RUN VERBOSE NON_INTERACTIVE
     main
 fi 

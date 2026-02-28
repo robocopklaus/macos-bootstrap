@@ -18,7 +18,7 @@ backup_conflicts() {
     local backed_up=false
 
     while IFS= read -r -d '' src_file; do
-        local rel_path="${src_file#$dotfiles_dir/}"
+        local rel_path="${src_file#"$dotfiles_dir"/}"
         local target="$HOME/$rel_path"
 
         # Conflict: target exists as a real file (not a symlink, not a directory)

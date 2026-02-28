@@ -136,5 +136,6 @@ main() {
 # Script entry point
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     init_script
+    parse_args "$@"
     main
 fi 

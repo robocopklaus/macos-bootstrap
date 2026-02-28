@@ -12,6 +12,31 @@ CONFLICT_BACKUPS=()
 CONFLICT_BLOCKERS=()
 SKIP_STOW_DRY_RUN=false
 
+# Check if a symlink target resolves to this repository's managed dotfile.
+is_managed_dotfile_symlink() {
+    local link_path="$1"
+    local rel_path="$2"
+    local link_target
+    link_target="$(readlink "$link_path" 2>/dev/null || true)"
+
+    if [[ -z "$link_target" ]]; then
+        return 1
+    fi
+
+    local resolved_target
+    if [[ "$link_target" == /* ]]; then
+        resolved_target="$link_target"
+    else
+        local target_dir
+        target_dir="$(cd "$(dirname "$link_path")" && pwd -P)"
+        local target_parent
+        target_parent="$(cd "$target_dir/$(dirname "$link_target")" 2>/dev/null && pwd -P)" || return 1
+        resolved_target="$target_parent/$(basename "$link_target")"
+    fi
+
+    [[ "$resolved_target" == "$REPO_ROOT/dotfiles/$rel_path" ]]
+}
+
 # Collect target conflicts for dotfiles package.
 # - Existing regular files/directories are backup candidates.
 # - Symlinks that do not point to this package are blocking conflicts.
@@ -25,11 +50,8 @@ collect_conflicts() {
         local target="$HOME/$rel_path"
 
         if [[ -L "$target" ]]; then
-            local link_target
-            link_target="$(readlink "$target" 2>/dev/null || true)"
-
             # Treat links to this package as managed/stowed; everything else blocks.
-            if [[ "$link_target" == *"dotfiles/$rel_path" ]]; then
+            if is_managed_dotfile_symlink "$target" "$rel_path"; then
                 continue
             fi
 
@@ -40,7 +62,13 @@ collect_conflicts() {
         if [[ -e "$target" ]]; then
             CONFLICT_BACKUPS+=("$rel_path")
         fi
-    done < <(find "$dotfiles_dir" -type f -print0)
+    done < <(
+        find "$dotfiles_dir" -type f \
+            ! -name '.stow-local-ignore' \
+            ! -name '.stow-global-ignore' \
+            ! -name '.stowrc' \
+            -print0
+    )
 }
 
 # Back up existing conflict paths in $HOME before stowing, without partial changes.
@@ -127,7 +155,7 @@ setup_dotfiles() {
 
     # Back up any conflicting real files before stowing so repo dotfiles are
     # never silently overwritten
-    backup_conflicts
+    backup_conflicts || return 1
 
     if [[ "$DRY_RUN" == true && "$SKIP_STOW_DRY_RUN" == true ]]; then
         warn "DRY RUN: Skipping stow simulation because conflicts would be moved first"

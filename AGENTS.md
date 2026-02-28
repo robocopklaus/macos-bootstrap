@@ -10,7 +10,6 @@
   - `core/`: OS updates, Xcode CLI, Homebrew.
   - `apps/`: App install, Dock setup.
   - `config/`: Dotfiles, SSH, macOS defaults.
-- `files/`: Static assets (e.g., `files/ssh/config`).
 
 ## Build, Test, and Development Commands
 - Run full setup: `./scripts/main.sh`
@@ -24,7 +23,7 @@
 
 ## Coding Style & Naming Conventions
 - Bash only; start scripts with `#!/usr/bin/env bash` and `set -euo pipefail`.
-- Use `common.sh` helpers: `info|warn|error|success`, `parse_args`, `ask_for_sudo`, `check_platform`, `run`, `ensure_brew_in_path`, `resolve_repo_root`, `create_symlink`.
+- Use `common.sh` helpers: `info|warn|error|success`, `init_script`, `parse_args`, `ask_for_sudo`, `check_platform`, `run`, `ensure_brew_in_path`, `resolve_repo_root`.
 - File naming: verbs + scope, e.g., `install-*.sh`, `configure-*.sh`, `update-*.sh`.
 - Functions: lower_snake_case; constants `UPPER_SNAKE_CASE` with `readonly`.
 - Idempotent modules: safe to re-run; honor `DRY_RUN` and `VERBOSE`.
@@ -42,5 +41,5 @@
 - Link related issues; keep changes focused and minimal.
 
 ## Security & Configuration Tips
-- Scripts may require `sudo`; never embed secrets. Use `files/ssh/config` and 1Password agent sockets from `config.sh`.
+- Scripts may require `sudo`; never embed secrets. Use `dotfiles/.ssh/config` and 1Password agent sockets from `config.sh`.
 - Be cautious modifying defaults and Dock—ensure settings match README and are reversible.

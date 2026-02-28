@@ -21,8 +21,11 @@ macOS bootstrap scripts for setting up a fresh macOS installation with developme
 # Custom config
 ./scripts/main.sh --config custom-config.sh
 
-# Run individual modules
-./scripts/core/install-homebrew.sh
+# Non-interactive mode
+./scripts/main.sh --yes
+
+# Run individual modules (setup-apps.sh and setup-dotfiles.sh support standalone flags;
+# core scripts require main.sh or pre-set env vars)
 ./scripts/apps/setup-apps.sh
 ./scripts/config/setup-dotfiles.sh
 
@@ -33,12 +36,14 @@ shellcheck scripts/**/*.sh
 bash -n scripts/main.sh
 ```
 
+`shellcheck` and syntax checks also run in CI via `.github/workflows/ci.yml`.
+
 ## Architecture
 
 - `install.sh` - One-liner entry point for fresh macOS; installs Xcode CLI tools, clones repo, runs main.sh
 - `config.sh` - Central configuration with `export_config` function; all options have environment variable overrides
 - `scripts/main.sh` - Orchestrator that runs modules via `run_module()` based on config flags
-- `scripts/common.sh` - Shared utilities: logging (`info|warn|error|success`), `parse_args`, `ask_for_sudo`, `run()` for DRY_RUN-aware execution, `ensure_brew_in_path`, `resolve_repo_root`
+- `scripts/common.sh` - Shared utilities: logging (`info|warn|error|success`), `init_script()` (sets `set -Eeuo pipefail`, error traps, platform checks), `parse_args`, `ask_for_sudo`, `run()` for DRY_RUN-aware execution, `ensure_brew_in_path`, `resolve_repo_root`
 - `scripts/core/` - System setup: macOS updates, Xcode CLI, Homebrew installation
 - `scripts/apps/` - Application installation and Dock configuration
 - `scripts/config/` - Dotfiles, macOS defaults
@@ -47,9 +52,9 @@ bash -n scripts/main.sh
 
 ## Coding Conventions
 
-- Bash only; start with `#!/usr/bin/env bash` and `set -euo pipefail`
+- Bash only; start with `#!/usr/bin/env bash` and call `init_script()` (which sets `set -Eeuo pipefail` with ERR trap inheritance); `install.sh` uses `set -euo pipefail` directly
 - Use `common.sh` helpers for logging and utilities
-- File naming: verb + scope (`install-*.sh`, `configure-*.sh`, `setup-*.sh`)
+- File naming: verb + scope (`install-*.sh`, `configure-*.sh`, `setup-*.sh`, `update-*.sh`)
 - Functions: `lower_snake_case`; constants: `UPPER_SNAKE_CASE` with `readonly`
 - All modules must be idempotent; honor `DRY_RUN` and `VERBOSE` globals
 - Use `run` wrapper for commands that should respect dry-run mode

@@ -8,7 +8,7 @@ My personal macOS setup scripts for bootstrapping a fresh installation with my p
 
 - **Fresh macOS Compatible**: Works without pre-installed tools
 - **Modular Design**: Focused, maintainable scripts
-- **Full Setup**: macOS updates, Xcode tools, Homebrew, applications, SSH, Dock, and system preferences
+- **Full Setup**: macOS updates, Xcode tools, Homebrew, applications, dotfiles, Dock, and system preferences
 - **Safe Preview**: Dry run mode and comprehensive logging
 - **Configurable**: Customizable via configuration file
 
@@ -18,13 +18,15 @@ My personal macOS setup scripts for bootstrapping a fresh installation with my p
 ├── install.sh                  # One-liner installer
 ├── config.sh                   # Configuration
 ├── Brewfile                    # Applications
-├── files/ssh/config            # SSH template
+├── dotfiles/                   # Dotfiles (GNU Stow package)
 └── scripts/
     ├── main.sh                 # Orchestrator
     ├── common.sh               # Shared utilities
     ├── core/                   # System setup
-    ├── apps/setup-apps.sh      # Applications & Dock
-    └── config/                 # Configuration
+    ├── apps/setup-apps.sh               # Applications & Dock
+    └── config/
+        ├── setup-dotfiles.sh            # Dotfiles (GNU Stow)
+        └── configure-macos-defaults.sh  # macOS preferences
 ```
 
 ## What Gets Installed

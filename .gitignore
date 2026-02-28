@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Editor temp files
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+
+# Logs
+*.log
+
+# Claude Code local settings
+.claude/settings.local.json

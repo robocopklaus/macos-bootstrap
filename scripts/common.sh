@@ -42,13 +42,27 @@ log() {
     local message="$*"
     local timestamp
     timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    echo -e "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+
+    local plain_line="[$timestamp] [$level] $message"
+    printf '%s\n' "$plain_line" >> "$LOG_FILE"
+
+    if [[ -t 1 ]]; then
+        local color="$NC"
+        case "$level" in
+            WARN) color="$YELLOW" ;;
+            ERROR) color="$RED" ;;
+            SUCCESS) color="$GREEN" ;;
+        esac
+        printf '%b\n' "${color}${plain_line}${NC}"
+    else
+        printf '%s\n' "$plain_line"
+    fi
 }
 
 info() { log "INFO" "$*"; }
-warn() { log "WARN" "${YELLOW}$*${NC}"; }
-error() { log "ERROR" "${RED}$*${NC}"; }
-success() { log "SUCCESS" "${GREEN}$*${NC}"; }
+warn() { log "WARN" "$*"; }
+error() { log "ERROR" "$*"; }
+success() { log "SUCCESS" "$*"; }
 
 # Helper to run commands with DRY_RUN awareness
 run() {

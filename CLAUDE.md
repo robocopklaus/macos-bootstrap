@@ -57,7 +57,7 @@ bash -n scripts/main.sh
 - File naming: verb + scope (`install-*.sh`, `configure-*.sh`, `setup-*.sh`, `update-*.sh`)
 - Functions: `lower_snake_case`; constants: `UPPER_SNAKE_CASE` with `readonly`
 - All modules must be idempotent; honor `DRY_RUN` and `VERBOSE` globals
-- Use `run` wrapper for commands that should respect dry-run mode
+- Prefer `run` for mutating commands that should respect dry-run mode; function-level `DRY_RUN` guards are also acceptable for grouped operations
 
 ## Commit Style
 

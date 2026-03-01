@@ -4,10 +4,14 @@ set -euo pipefail
 # macOS Bootstrap - Self-contained installer
 # This script can be downloaded and run directly on a fresh macOS installation
 # Usage: curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/install.sh | bash
+#
+# NOTE: This script intentionally duplicates a small subset of logic from
+# scripts/common.sh and scripts/core/* so it can run before the repository is
+# cloned locally. Keep behavior aligned with shared scripts when updating.
 
 REPO_URL="https://github.com/robocopklaus/macos-bootstrap.git"
 CLONE_DIR="$HOME/.macos-bootstrap"
-TEMP_DIR="/tmp/macos-bootstrap-$$"
+TEMP_DIR="$(mktemp -d -t macos-bootstrap.XXXXXX)"
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -166,4 +170,4 @@ main() {
 
 # Script entry point
 # Always run main when script is executed (either directly or piped)
-main "$@" 
+main "$@"

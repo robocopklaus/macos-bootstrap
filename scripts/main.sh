@@ -13,13 +13,6 @@ export REPO_ROOT
 LOG_FILE="${LOG_FILE:-/tmp/macos-bootstrap-$(date +%Y%m%d-%H%M%S).log}"
 export LOG_FILE
 
-# Load configuration
-if [[ -f "$SCRIPT_DIR/../config.sh" ]]; then
-    # shellcheck source=../config.sh
-    source "$SCRIPT_DIR/../config.sh"
-    export_config
-fi
-
 # Run a module script
 run_module() {
     local module_name="$1"
@@ -65,11 +58,12 @@ main() {
     ask_for_sudo
     
     # Core system setup
+    # With strict mode + ERR trap enabled, any failing module is fatal by default.
     run_module "macOS Updates" "$SCRIPT_DIR/core/update-macos.sh" "INSTALL_MACOS_UPDATES"
-    run_module "Xcode CLI Tools" "$SCRIPT_DIR/core/install-xcode-tools.sh" "INSTALL_XCODE_TOOLS" || exit 1
+    run_module "Xcode CLI Tools" "$SCRIPT_DIR/core/install-xcode-tools.sh" "INSTALL_XCODE_TOOLS"
 
     # Install tools and applications (Homebrew is critical - apps depend on it)
-    run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW" || exit 1
+    run_module "Homebrew" "$SCRIPT_DIR/core/install-homebrew.sh" "INSTALL_HOMEBREW"
     run_module "Applications & Dock" "$SCRIPT_DIR/apps/setup-apps.sh" "INSTALL_APPLICATIONS"
 
     # Configuration

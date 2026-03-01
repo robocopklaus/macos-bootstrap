@@ -11,6 +11,7 @@ My personal macOS setup scripts for bootstrapping a fresh installation with my p
 - **Full Setup**: macOS updates, Xcode tools, Homebrew, applications, dotfiles, Dock, and system preferences
 - **Safe Preview**: Dry run mode and comprehensive logging
 - **Configurable**: Customizable via configuration file
+- **Resilient App Installs**: Base tooling is installed first; optional GUI and MAS apps are separate phases
 
 ## Project Structure
 
@@ -33,10 +34,24 @@ My personal macOS setup scripts for bootstrapping a fresh installation with my p
 
 See `Brewfile` for the complete list. Includes:
 
-- **Development**: Git, Volta, Cursor, Ghostty
-- **Security**: 1Password
-- **Productivity**: Slack, Chrome, Zen browser, Home Assistant
-- **Mac App Store**: Numbers, Pages, GCal
+- **Development tools**: Git, Volta, Antidote, Stow, GH CLI, Opencode, Oh My Posh, Postman
+- **Security & privacy**: 1Password, 1Password CLI
+- **Productivity**: Cursor, ChatGPT, Clockify, Mimestream, Ghostty, Docker, Google Drive, Raycast, Obsidian
+- **Communication**: Slack, WhatsApp
+- **Browsers & web**: Safari (system), Google Chrome, Zen, Finicky
+- **Smart home**: Home Assistant
+- **Media**: IINA
+- **Mac App Store (optional by default)**: Numbers, Pages, Super Agent, 1Password for Safari, GCal for Google Calendar
+
+## Application Install Phases
+
+`scripts/apps/setup-apps.sh` installs applications in three phases for reliability:
+
+1. **Base dependencies (blocking)**: Homebrew formulae/taps from `Brewfile`
+2. **Cask apps (non-blocking)**: Installed one-by-one; failures are logged and bootstrap continues
+3. **Mac App Store apps (optional, non-blocking)**: Disabled by default unless `INSTALL_MAS_APPS=true`
+
+This keeps unattended bootstrap stable even if optional app installs fail.
 
 ## Usage
 
@@ -59,6 +74,13 @@ curl -fsSL https://raw.githubusercontent.com/robocopklaus/macos-bootstrap/main/i
 ## Configuration
 
 Edit `config.sh` to customize what gets installed. Use `--config custom-config.sh` for custom configurations.
+
+Common toggles:
+
+- `INSTALL_APPLICATIONS=true|false` - enable/disable all app setup
+- `INSTALL_CASK_APPS=true|false` - enable/disable Homebrew cask phase
+- `INSTALL_MAS_APPS=true|false` - enable/disable Mac App Store installs (default: `false`)
+- `CUSTOMIZE_DOCK=true|false` - enable/disable Dock customization
 
 ### Adding Applications
 

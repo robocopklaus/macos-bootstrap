@@ -12,6 +12,9 @@
 # - Utilities: System utilities and tools
 # - Mac App Store: Applications from the Mac App Store
 
+# Install GUI apps in /Applications for predictable Dock paths.
+cask_args appdir: "/Applications"
+
 # =============================================================================
 # DEVELOPMENT TOOLS
 # =============================================================================
@@ -33,9 +36,6 @@ brew "stow"
 
 # Oh My Posh - https://ohmyposh.dev/docs/installation/macos
 brew "oh-my-posh"
-
-# OpenAI Codex - AI coding assistant CLI
-cask "codex"
 
 # Opencode - Open source AI code assistant
 brew "opencode"
@@ -129,9 +129,6 @@ cask "zen"
 
 # Video player
 cask "iina"
-
-# Music streaming
-#cask "spotify"
 
 # =============================================================================
 # MAC APP STORE APPLICATIONS

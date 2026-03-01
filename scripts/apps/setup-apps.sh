@@ -6,43 +6,183 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../common.sh"
 
 REPO_ROOT=$(resolve_repo_root "$SCRIPT_DIR")
+readonly BREWFILE_PATH="$REPO_ROOT/Brewfile"
 
-# Install applications from Brewfile
-install_brewfile() {
-    info "Installing applications from Brewfile..."
-
-    if [[ "$DRY_RUN" == true ]]; then
-        warn "DRY RUN: Would install applications from Brewfile"
-        return 0
+# Validate Brewfile location
+ensure_brewfile_exists() {
+    if [[ ! -f "$BREWFILE_PATH" ]]; then
+        error "Brewfile not found at: $BREWFILE_PATH"
+        return 1
     fi
 
-    # Ensure brew command is available in this shell
+    info "Using Brewfile: $BREWFILE_PATH"
+}
+
+# Install base Homebrew dependencies (formulae + taps).
+install_base_dependencies() {
+    info "Installing base Homebrew dependencies..."
+
     if ! ensure_brew_in_path; then
         error "brew not found. Ensure Homebrew is installed and available in PATH"
         return 1
     fi
 
-    local brewfile_path="$REPO_ROOT/Brewfile"
+    ensure_brewfile_exists || return 1
 
-    if [[ ! -f "$brewfile_path" ]]; then
-        error "Brewfile not found at: $brewfile_path"
-        return 1
-    fi
-
-    info "Using Brewfile: $brewfile_path"
-
-    if run brew bundle --file="$brewfile_path"; then
-        success "Applications installed successfully from Brewfile"
+    if run env HOMEBREW_BUNDLE_CASK_SKIP=1 HOMEBREW_BUNDLE_MAS_SKIP=1 brew bundle --file="$BREWFILE_PATH"; then
+        success "Base dependencies installed successfully"
     else
-        error "Failed to install applications from Brewfile"
+        error "Failed to install base dependencies"
         return 1
     fi
 }
 
-# Check if application exists
-app_exists() {
+# Install cask apps one-by-one so optional app failures are non-fatal.
+install_cask_apps() {
+    if [[ "${INSTALL_CASK_APPS:-true}" != "true" ]]; then
+        info "Skipping cask apps (INSTALL_CASK_APPS=false)"
+        return 0
+    fi
+
+    info "Installing cask apps from Brewfile..."
+    ensure_brewfile_exists || return 1
+
+    local cask_apps=()
+    local cask_line
+    while IFS= read -r cask_line; do
+        [[ -n "$cask_line" ]] && cask_apps+=("$cask_line")
+    done < <(HOMEBREW_NO_AUTO_UPDATE=1 brew bundle list --cask --file="$BREWFILE_PATH" 2>/dev/null || true)
+
+    if (( ${#cask_apps[@]} == 0 )); then
+        info "No cask apps defined in Brewfile"
+        return 0
+    fi
+
+    local failed_apps=()
+    local cask_app
+    for cask_app in "${cask_apps[@]}"; do
+        if [[ "$DRY_RUN" != true ]] && brew list --cask "$cask_app" >/dev/null 2>&1; then
+            if [[ "$VERBOSE" == true ]]; then
+                info "Skipping $cask_app (already installed)"
+            fi
+            continue
+        fi
+
+        if run brew install --cask "$cask_app"; then
+            if [[ "$DRY_RUN" != true ]]; then
+                success "✓ Installed cask: $cask_app"
+            fi
+        else
+            warn "Failed to install optional cask: $cask_app"
+            failed_apps+=("$cask_app")
+        fi
+    done
+
+    if (( ${#failed_apps[@]} > 0 )); then
+        warn "Some optional cask installs failed: ${failed_apps[*]}"
+        warn "Continuing bootstrap; re-run this module later to retry"
+    else
+        success "Cask apps processed successfully"
+    fi
+}
+
+# Install Mac App Store apps as an optional, non-blocking phase.
+install_mas_apps() {
+    if [[ "${INSTALL_MAS_APPS:-false}" != "true" ]]; then
+        info "Skipping Mac App Store apps (INSTALL_MAS_APPS=false)"
+        return 0
+    fi
+
+    info "Installing Mac App Store apps from Brewfile..."
+
+    ensure_brewfile_exists || return 1
+
+    if [[ "$DRY_RUN" != true ]] && ! command -v mas >/dev/null 2>&1; then
+        warn "mas CLI not found. Skipping Mac App Store apps"
+        warn "Install mas and sign in to the App Store, then re-run this module"
+        return 0
+    fi
+
+    local mas_entries=()
+    local mas_line
+    while IFS= read -r mas_line; do
+        [[ -n "$mas_line" ]] && mas_entries+=("$mas_line")
+    done < <(
+        awk -F'"' '/^[[:space:]]*mas[[:space:]]*"/ {
+            name=$2
+            if (match($0, /id:[[:space:]]*[0-9]+/)) {
+                id=substr($0, RSTART + 3, RLENGTH - 3)
+                gsub(/[[:space:]]/, "", id)
+                print name "|" id
+            }
+        }' "$BREWFILE_PATH"
+    )
+
+    if (( ${#mas_entries[@]} == 0 )); then
+        info "No Mac App Store apps defined in Brewfile"
+        return 0
+    fi
+
+    local installed_ids=""
+    if [[ "$DRY_RUN" != true ]]; then
+        installed_ids="$(mas list 2>/dev/null | awk '{print $1}')"
+    fi
+
+    local failed_apps=()
+    local entry
+    for entry in "${mas_entries[@]}"; do
+        local app_name="${entry%%|*}"
+        local app_id="${entry##*|}"
+
+        if [[ "$DRY_RUN" != true ]] && grep -qx "$app_id" <<< "$installed_ids"; then
+            if [[ "$VERBOSE" == true ]]; then
+                info "Skipping $app_name (already installed from App Store)"
+            fi
+            continue
+        fi
+
+        if run mas install "$app_id"; then
+            if [[ "$DRY_RUN" != true ]]; then
+                success "✓ Installed MAS app: $app_name"
+                installed_ids+=$'\n'"$app_id"
+            fi
+        else
+            warn "Failed to install optional MAS app: $app_name"
+            failed_apps+=("$app_name")
+        fi
+    done
+
+    if (( ${#failed_apps[@]} > 0 )); then
+        warn "Some optional MAS installs failed: ${failed_apps[*]}"
+        warn "Continuing bootstrap; re-run this module after App Store login/state fixes"
+    else
+        success "Mac App Store apps processed successfully"
+    fi
+}
+
+# Resolve an app path across common install locations.
+resolve_app_path() {
     local app_path="$1"
-    [[ -d "$app_path" ]]
+    local app_name
+    app_name="$(basename "$app_path")"
+
+    local candidates=(
+        "$app_path"
+        "/Applications/$app_name"
+        "$HOME/Applications/$app_name"
+        "/System/Applications/$app_name"
+        "/System/Cryptexes/App/System/Applications/$app_name"
+    )
+
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if [[ -d "$candidate" ]]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
 }
 
 # Check if app is already in the Dock
@@ -77,16 +217,17 @@ setup_dock() {
 
         info "Adding $category applications to Dock..."
         for app in "${apps[@]}"; do
-            if app_exists "$app"; then
-                if dock_item_exists "$app"; then
+            local resolved_app
+            if resolved_app="$(resolve_app_path "$app")"; then
+                if dock_item_exists "$resolved_app"; then
                     if [[ "$VERBOSE" == true ]]; then
-                        info "Skipping $app (already in Dock)"
+                        info "Skipping $resolved_app (already in Dock)"
                     fi
-                elif dockutil --no-restart --add "$app" >/dev/null 2>&1; then
-                    success "✓ Added $app to Dock"
+                elif dockutil --no-restart --add "$resolved_app" >/dev/null 2>&1; then
+                    success "✓ Added $resolved_app to Dock"
                     ((added_count++))
                 else
-                    warn "Failed to add $app to Dock"
+                    warn "Failed to add $resolved_app to Dock"
                 fi
             else
                 if [[ "$VERBOSE" == true ]]; then
@@ -170,8 +311,15 @@ setup_dock() {
 
 # Main function
 main() {
-    install_brewfile
-    setup_dock
+    install_base_dependencies
+    install_cask_apps
+    install_mas_apps
+
+    if [[ "${CUSTOMIZE_DOCK:-true}" == "true" ]]; then
+        setup_dock
+    else
+        info "Dock customization disabled via CUSTOMIZE_DOCK=false"
+    fi
 }
 
 # Script entry point

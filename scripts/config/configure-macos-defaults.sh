@@ -71,6 +71,41 @@ log_section() {
     info "=== $section ==="
 }
 
+# Back up current defaults values before applying changes
+backup_macos_defaults() {
+    log_section "Backing Up Existing macOS Defaults"
+
+    local timestamp
+    timestamp="$(date +%Y%m%d-%H%M%S)"
+    local backup_dir="$HOME/.macos-defaults-backup-$timestamp"
+    local domains=(
+        "com.apple.dock"
+        "com.apple.finder"
+        "NSGlobalDomain"
+        "com.apple.AppleMultitouchTrackpad"
+        "com.apple.driver.AppleBluetoothMultitouch.trackpad"
+    )
+
+    if [[ "$DRY_RUN" == true ]]; then
+        info "[DRY RUN] Would back up defaults domains to: $backup_dir"
+        return 0
+    fi
+
+    mkdir -p "$backup_dir"
+
+    local domain
+    for domain in "${domains[@]}"; do
+        local backup_file="$backup_dir/$domain.plist"
+        if defaults export "$domain" "$backup_file" >/dev/null 2>&1; then
+            success "✓ Backed up $domain"
+        else
+            warn "Could not export $domain (continuing)"
+        fi
+    done
+
+    info "Defaults backup saved to: $backup_dir"
+}
+
 # Function to configure Dock settings
 configure_dock() {
     log_section "Configuring Dock"
@@ -175,6 +210,8 @@ main() {
         error "This script should not be run as root"
         exit 1
     fi
+
+    backup_macos_defaults
     
     configure_dock
     configure_finder

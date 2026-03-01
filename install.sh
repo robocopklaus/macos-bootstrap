@@ -24,7 +24,8 @@ log() {
     local level="$1"
     shift
     local message="$*"
-    local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+    local timestamp
+    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
     echo -e "[$timestamp] [$level] $message"
 }
 
@@ -100,7 +101,8 @@ install_xcode_tools() {
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     
     # Get the identifier for the Command Line Tools
-    local PROD=$(softwareupdate -l | grep "\*.*Command Line Tools" | tail -n 1 | sed 's/^[^C]* //')
+    local PROD
+    PROD=$(softwareupdate -l | grep "\*.*Command Line Tools" | tail -n 1 | sed 's/^[^C]* //')
     
     if [[ -z "$PROD" ]]; then
         error "Could not find Command Line Tools package"

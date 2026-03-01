@@ -8,8 +8,10 @@ source "$SCRIPT_DIR/../common.sh"
 # Install Homebrew
 install_homebrew() {
     info "Checking Homebrew installation..."
-    
-    if command -v brew >/dev/null 2>&1; then
+
+    # Bootstrap PATH first for shells where Homebrew is installed but not initialized
+    # yet (common in non-login or fresh bootstrap contexts).
+    if ensure_brew_in_path; then
         success "Homebrew is already installed"
         return 0
     fi

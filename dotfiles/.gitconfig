@@ -14,13 +14,13 @@
   tool = cursor  # Set Cursor as the diff tool
 
 [difftool "cursor"]
-  cmd = cursor --wait --diff $LOCAL $REMOTE  # Command to use Cursor for diffs
+  cmd = cursor --wait --diff "$LOCAL" "$REMOTE"  # Command to use Cursor for diffs
 
 [merge]
   tool = cursor  # Set Cursor as the merge tool
 
 [mergetool "cursor"]
-  cmd = cursor --wait $MERGED  # Command to use Cursor for merges
+  cmd = cursor --wait "$MERGED"  # Command to use Cursor for merges
 
 [init]
   defaultBranch = main  # Set default branch name for new repositories
@@ -41,10 +41,10 @@
   format = ssh  # Use SSH format for GPG
 
 [gpg "ssh"]
-  program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign  # GPG program
+  program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign  # 1Password SSH signer path
 
 [commit]
-  gpgsign = true  # Enable GPG signing for commits using SSH format
+  gpgsign = true  # Mandatory commit signing with 1Password SSH signer
 
 # Uncomment and configure the credential helper if needed
 # [credential]

@@ -44,7 +44,7 @@
   program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign  # 1Password SSH signer path
 
 [commit]
-  gpgsign = false  # Set true after verifying signing tool availability
+  gpgsign = true  # Mandatory commit signing with 1Password SSH signer
 
 # Uncomment and configure the credential helper if needed
 # [credential]

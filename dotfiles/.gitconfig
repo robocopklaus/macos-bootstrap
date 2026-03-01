@@ -41,7 +41,7 @@
   format = ssh  # Use SSH format for GPG
 
 [gpg "ssh"]
-  program = op-ssh-sign  # Requires 1Password/op-ssh-sign available in PATH
+  program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign  # 1Password SSH signer path
 
 [commit]
   gpgsign = false  # Set true after verifying signing tool availability
